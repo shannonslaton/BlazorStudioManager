@@ -1,0 +1,78 @@
+﻿@page "/currentstudio"
+@inject IStudioManagerService service
+@inject TimeZoneService TimeZoneService
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+@using Telerik.WebReportDesigner.Blazor
+@inject HttpClient client
+
+<h1>Logged In</h1>
+
+
+<style>
+    #wrd1 {
+        position: relative;
+        width: 1300px;
+        height: 880px;
+        padding-right: 50px;
+    }
+</style>
+
+<TelerikButton OnClick="ToggleGridData">Show/Hide Grid Data Integration</TelerikButton>
+@if (ShowGridData)
+{
+    <GridReport></GridReport>
+}
+else
+{
+    @if (ShowReport)
+    {
+        <TelerikButton OnClick="ToggleShow">Hide Report Designer</TelerikButton>
+        <WebReportDesigner DesignerId="wrd1"
+                           ServiceUrl="/api/reportdesigner"
+                           ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
+                           PropertiesArea="new PropertiesAreaOptions() { Layout = PropertiesAreaLayout.Categorized }" />
+    }
+    else
+    {
+        if (IsLoading)
+        {
+            <h4>Loading...</h4>
+        }
+        else
+        {
+            <TelerikButton OnClick="ToggleShow">Show Report Designer</TelerikButton>
+
+            <TelerikGrid Data="@GridData">
+                <GridColumns>
+                    <GridColumn Field="RecId" Title="Id" Width="150px" />
+                    <GridColumn Field="CatalogName" Title="Name" Width="150px" />
+                </GridColumns>
+            </TelerikGrid>
+        }
+    }
+}
+
+@code{
+    public bool IsLoading { get; set; }
+    public bool ShowGridData { get; set; }
+    public bool ShowReport { get; set; }
+    public List<Catalog> GridData { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        var enumsloaded = await service.SetEnums("Catalogs");
+        GridData = await client.GetFromJsonAsync<List<Catalog>>("api/Catalogs");
+        IsLoading = false;
+    }
+
+    void ToggleShow()
+    {
+        ShowReport = !ShowReport;
+    }
+    void ToggleGridData()
+    {
+        ShowGridData = !ShowGridData;
+    }
+}

@@ -1,0 +1,14 @@
+﻿@inject NavigationManager navigationManager
+
+<div id="myHeaderBanner">
+    <button @onclick="RegisterClick" class="btnMembership" id="btnMembership">click here to sign up for a free one week trial</button>
+    @*<TelerikButton OnClick="@RegisterClick" Primary="true" Class="btnMembership" Id="btnMembership">click here to sign up for a free one week trial</TelerikButton>*@
+</div>
+
+@code {
+
+    void RegisterClick()
+    {
+        navigationManager.NavigateTo("/register");
+    }
+}

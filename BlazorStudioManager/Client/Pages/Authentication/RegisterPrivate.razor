@@ -1,0 +1,159 @@
+﻿@page "/registerprivate"
+@layout RegisterLayout
+@inject NavigationManager navigationManager
+@inject IStudioManagerService StudioManagerService
+@inject HttpClient client
+@inject IJSRuntime js
+@inject CustomAuthStateProvider CustomAuthStateProvider
+
+<div class="StudioManagerBody">
+    @if (IsLoading)
+    {
+        <IsLoadingLogo />
+    }
+    else
+    {
+        <div class="k-card" style="width: 90%;
+                margin: auto;
+                margin-top: 15px;">
+            <div class="k-card-header">
+                <h1 class="h2 font-weight-normal login-title">
+                    Register
+                </h1>
+                @*<h2>Registration coming soon</h2>*@
+            </div>
+            <div class="k-card-body" style="width: 98%; margin: auto;">
+                <div class="container">
+                    <EditForm OnValidSubmit="OnSubmit" Model="registerRequest">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <label class="text-danger">@ErrorMessage</label>
+                        <h4>Create a new account.</h4>
+                        <hr />
+                        <div class="form-group">
+                            
+                            <TelerikTextBox Width="100%" @bind-Value="@registerRequest.FirstName" Id="inputFirstName" PlaceHolder="First Name" />
+                            <ValidationMessage For="@(() => registerRequest.FirstName)" />
+                        </div>
+                        @*<div class="form-group">
+                                <TelerikTextBox Width="100%" @bind-Value="@registerRequest.MiddleName" Id="inputMiddleName" PlaceHolder="Middle Name" />
+                                <ValidationMessage For="@(() => registerRequest.MiddleName)" />
+                            </div>*@
+                        <div class="form-group">
+                            <TelerikTextBox Width="100%" @bind-Value="@registerRequest.LastName" Id="inputLastName" PlaceHolder="Last Name" />
+                            <ValidationMessage For="@(() => registerRequest.LastName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <TelerikTextBox Width="100%" @bind-Value="@registerRequest.Email" Id="inputEmail" PlaceHolder="Email" />
+                            <ValidationMessage For="@(() => registerRequest.Email)" />
+                        </div>
+
+                        <div class="form-group">
+                            <TelerikTextBox Width="100%" Label="Phone Number:" @bind-Value="@registerRequest.PhoneNumber"></TelerikTextBox>
+                            <ValidationMessage For="@(() => registerRequest.PhoneNumber)" />
+                        </div>
+
+                        <div class="form-group">
+                            <TelerikTextBox Width="100%" PlaceHolder="Enter Password"
+                                            Password="HidePassword"
+                                            @bind-Value="@registerRequest.Password"></TelerikTextBox>
+                            <TelerikButton OnClick="@RevealPassword"
+                                           Icon="unlock"
+                                           ButtonType="ButtonType.Button" TabIndex="-1"></TelerikButton>
+                            <ValidationMessage For="@(() => registerRequest.Password)" />
+                        </div>
+
+                        <div class="form-group">
+                            <TelerikTextBox Width="100%" Password="@HideConfirmPassword"
+                                            PlaceHolder="Re-Enter Your Password"
+                                            @bind-Value="@registerRequest.PasswordConfirm"></TelerikTextBox>
+                            <TelerikButton OnClick="@RevealConfirmPassword"
+                                           Icon="unlock"
+                                           ButtonType="ButtonType.Button" TabIndex="-1"></TelerikButton>
+                            <ValidationMessage For="@(() => registerRequest.PasswordConfirm)" />
+                        </div>
+
+                        <div>
+                            <TelerikButton Id="btnCreateAccount" ButtonType="ButtonType.Submit" Class="btn btn-lg btn-primary btn-block">Create account</TelerikButton>
+                            <NavLink href="login">
+                                <h6 class="font-weight-normal text-center">Already have an account? Click here to login</h6>
+                            </NavLink>
+                        </div>
+
+
+                    </EditForm>
+
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code{
+    string ErrorMessage { get; set; }
+    string EditStatus { get; set; }
+    bool IsLoading { get; set; }
+    bool HidePassword { get; set; } = true;
+    bool HideConfirmPassword { get; set; } = true;
+    bool firstLoad { get; set; } = true;
+
+    RegisterRequest registerRequest { get; set; } = new RegisterRequest();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        await Task.Delay(1);
+        IsLoading = false;
+    }
+
+    async Task OnSubmit()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            registerRequest.BaseUrl = navigationManager.BaseUri;
+
+            await CustomAuthStateProvider.Register(registerRequest);
+            navigationManager.NavigateTo("");
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    public async Task RevealPassword()
+    {
+        HidePassword = false;
+        await Task.Delay(700);
+        HidePassword = true;
+    }
+
+    public async Task RevealConfirmPassword()
+    {
+        HideConfirmPassword = false;
+        await Task.Delay(700);
+        HideConfirmPassword = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstLoad && registerRequest.DisciplineId > 0)
+        {
+            await js.InvokeVoidAsync("focusInputFromBlazor", new[] { ".defaultFocus" });
+            firstLoad = false;
+        }
+    }
+
+    public async Task ComboBoxChanged()
+    {
+        await Task.Delay(1);
+    }
+}

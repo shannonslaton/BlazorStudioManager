@@ -1,0 +1,26 @@
+﻿
+<TelerikDropDownList Filterable="true" Width="100%" Data="@PrivacyLevels" @bind-Value="@SelectedValue" OnChange="OnChangeHandler" />
+
+@code {
+    [Parameter] public string SelectedValue { get; set; }
+    [Parameter] public EventCallback<string> SelectedValueChanged { get; set; }
+    [Parameter] public EventCallback<string> DropDownChanged { get; set; }
+
+    List<string> PrivacyLevels = new List<string>();
+
+    protected override void OnInitialized()
+    {
+
+        PrivacyLevels.Add("Public");
+        PrivacyLevels.Add("Private");
+        PrivacyLevels.Add("Discipline Only");
+        PrivacyLevels.Add("Discipline Leaders");
+
+    }
+
+    async Task OnChangeHandler(object newVal)
+    {
+        await SelectedValueChanged.InvokeAsync((string)newVal);
+        await DropDownChanged.InvokeAsync((string)newVal);
+    }
+}

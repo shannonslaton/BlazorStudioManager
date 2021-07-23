@@ -1,0 +1,179 @@
+﻿@inject NavigationManager navigationManager
+@inject IJSRuntime js
+
+<div class="MobileClass">
+    <TelerikMenu Data="@MenuItemsVertical"
+                 Orientation="MenuOrientation.Horizontal"
+                 OnClick="@((MenuItem item) => OnMenuItemClickHandler(item))"
+                 ParentIdField="@nameof(MenuItem.MenuItemId)"
+                 IdField="@nameof(MenuItem.Id)"
+                 TextField="@nameof(MenuItem.MenuItemName)"
+                 ImageUrlField="@nameof(MenuItem.Image)"
+                 IconClassField="@nameof(MenuItem.MyIconClass)"
+                 IconField="@nameof(MenuItem.MyIconField)"
+                 ItemsField="@nameof(MenuItem.SubMenuItemList)">
+        <ItemTemplate>
+            @{
+                var item = context as MenuItem;
+
+                if (item.Id == 99)
+                {
+                    <div>
+                        <img src="@context.Image" style="height: 30px;" />
+                    </div>
+                }
+                else
+                {
+                    if (item.MyIconField != null)
+                    {
+                        <div>
+                            <i class="fad fa-bars">Hello</i>
+                            @*<i class='@item.MyIconClass'>@item.MenuItemName</i>*@
+                            <i class='@item.MyIconClass'>@item.MenuItemName</i>
+                        </div>
+                    }
+                    if (item.MyIconClass != null)
+                    {
+                        <div>
+                            <TelerikButton IconClass="@item.MyIconClass">   @item.MenuItemName</TelerikButton>
+                        </div>
+                    }
+                    else
+                    {
+                        if (item.Image != null)
+                        {
+                            <div>
+                                <img src="@context.Image" style="height: 30px;" />
+                                @item.MenuItemName
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                @item.MenuItemName
+                            </div>
+                        }
+
+                    }
+                }
+            }
+        </ItemTemplate>
+    </TelerikMenu>
+</div>
+<div class="WideScreenClass">
+    <TelerikMenu Data="@MenuItemsHorizontal"
+                 Orientation="MenuOrientation.Horizontal"
+                 OnClick="@((MenuItem item) => OnMenuItemClickHandler(item))"
+                 ParentIdField="@nameof(MenuItem.MenuItemId)"
+                 IdField="@nameof(MenuItem.Id)"
+                 TextField="@nameof(MenuItem.MenuItemName)"
+                 ImageUrlField="@nameof(MenuItem.Image)"
+                 IconClassField="@nameof(MenuItem.MyIconClass)"
+                 IconField="@nameof(MenuItem.MyIconField)"
+                 ItemsField="@nameof(MenuItem.SubMenuItemList)">
+        <ItemTemplate>
+            @{
+                var item = context as MenuItem;
+
+                if (item.Id == 99)
+                {
+                    <div>
+                        <img src="@context.Image" style="height: 30px;" />
+                    </div>
+                }
+                else
+                {
+                    if (item.MyIconField != null)
+                    {
+                        <div>
+                            <i class='@item.MyIconClass'>@item.MenuItemName</i>
+                        </div>
+                    }
+                    if (item.MyIconClass != null)
+                    {
+                        <div>
+                            <i class='@item.MyIconClass'>@item.MenuItemName</i>
+                        </div>
+                    }
+                    else
+                    {
+                        if (item.Image != null)
+                        {
+                            <div>
+                                <img src="@context.Image" style="height: 30px;" />
+                                @item.MenuItemName
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                @item.MenuItemName
+                            </div>
+                        }
+
+                    }
+                }
+            }
+        </ItemTemplate>
+    </TelerikMenu>
+</div>
+
+@code {
+    List<MenuItem> MenuItemsHorizontal { get; set; }
+    List<MenuItem> MenuItemsVertical { get; set; }
+    MenuItem ClickedItem { get; set; }
+    string Url { get; set; }
+
+    protected void OnMenuItemClickHandler(MenuItem item)
+    {
+        navigationManager.NavigateTo(item.URL);
+    }
+
+    protected override void OnInitialized()
+    {
+        MenuItemsHorizontal = new List<MenuItem>()
+        {
+            new MenuItem()
+            {
+                MenuItemName = "StudioManager",
+                Image = "/favicon-32x32.png",
+                URL = "/"
+            },
+            new MenuItem()
+            {
+                MenuItemName = "Pricing",
+                URL = "/pricing"
+            },
+            new MenuItem()
+            {
+                MenuItemName = "FAQ",
+                URL = "/faq"
+            }
+        };
+
+        MenuItemsVertical = new List<MenuItem>()
+        {
+            new MenuItem()
+            {
+                MenuItemName = "StudioManager",
+                MyIconClass = "fad fa-bars",
+                URL = "/",
+                SubMenuItemList = new List<MenuItem>()
+                {
+                    new MenuItem()
+                    {
+                        MenuItemName = "Pricing",
+                        URL = "/pricing"
+                    },
+                    new MenuItem()
+                    {
+                        MenuItemName = "FAQ",
+                        URL = "/faq"
+                    }
+                }
+            }
+        };
+
+        base.OnInitialized();
+    }
+}

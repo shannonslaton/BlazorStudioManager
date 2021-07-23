@@ -1,0 +1,110 @@
+﻿@page "/welcome"
+@layout AuthLayout
+@inject NavigationManager navigationManager
+@inject HttpClient client
+@inject IJSRuntime js
+
+@*<PageTitle Title=@pageTitle />*@
+
+<div class="StudioManagerBody">
+    @if (IsLoading)
+    {
+        <IsLoadingLoggedIn />
+    }
+    else
+    {
+
+    }
+</div>
+
+@code {
+    bool IsLoading { get; set; }
+    //int selectedTheme { get; set; }
+    bool onWelcomePage = true;
+    string pageTitle = "Welcome to StudioManager!";
+    string imageIsForSrc = "https://Showbuilderstorage.blob.core.windows.net/sbisfor/1.jpg";
+    string imageDoesSrc = "https://Showbuilderstorage.blob.core.windows.net/sbisfor/15.jpg";
+    //IEnumerable<DropDownOption> themes { get; set; }
+    bool isDark { get; set; }
+
+    protected override void OnInitialized()
+    {
+        IsLoading = false;
+
+        //themes = await client.GetFromJsonAsync<IEnumerable<DropDownOption>>("api/themes/getthemesddl");
+
+        //selectedTheme = themes.FirstOrDefault().RecId;
+
+        IsLoading = false;
+
+        navigationManager.LocationChanged += HandleLocationChanged;
+
+    }
+
+    private void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        onWelcomePage = false;
+    }
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    await base.OnAfterRenderAsync(firstRender);
+
+    //    if (firstRender)
+    //    {
+    //        //var imageIsForNumber = 1;
+    //        //var imageDoesNumber = 15;
+    //        //var imageMaxNumber = 15;
+    //        //var newImageIsForUrl = "";
+    //        //var newImageDoesUrl = "";
+
+    //        while (imageIsForNumber <= imageMaxNumber && onWelcomePage)
+    //        {
+    //            //newImageIsForUrl = "https://Showbuilderstorage.blob.core.windows.net/sbisfor/" + imageIsForNumber + ".jpg";
+    //            //newImageDoesUrl = "https://Showbuilderstorage.blob.core.windows.net/sbisfor/" + imageDoesNumber + ".jpg";
+
+    //            //await Task.Delay(2000);
+    //            //await js.InvokeVoidAsync("changeImage", new[] { "sbisforPictures", newImageIsForUrl });
+
+    //            //await Task.Delay(1000);
+    //            //await js.InvokeVoidAsync("changeImage", new[] { "sbdoesPictures", newImageDoesUrl });
+
+    //            //if (imageIsForNumber == imageMaxNumber)
+    //            //{
+    //            //    imageIsForNumber = 1;
+    //            //    imageDoesNumber = 15;
+    //            //}
+    //            //else
+    //            //{
+    //            //    imageIsForNumber++;
+    //            //    imageDoesNumber--;
+    //            //}
+    //        }
+
+
+    //    }
+    //}
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    void RegisterClick()
+    {
+        navigationManager.NavigateTo("/register");
+    }
+
+    void FaqClick()
+    {
+        navigationManager.NavigateTo("/faq");
+    }
+
+    //async Task ChangeTheme()
+    //{
+    //    DropDownOption selection = themes.FirstOrDefault(d => d.RecId == selectedTheme);
+    //    isDark = !isDark;
+    //    await js.InvokeVoidAsync("themeChanger.changeCss", selection.DdoUrl, isDark, "Dark");
+    //}
+
+}

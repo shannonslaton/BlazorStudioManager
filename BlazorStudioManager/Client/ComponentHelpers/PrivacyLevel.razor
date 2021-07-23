@@ -1,0 +1,29 @@
+﻿
+<span class="k-floating-label-container" style="width: 100%;">
+    <label class="k-label">Privacy Level</label>
+    <TelerikDropDownList Filterable="true" Width="100%" Data="@PrivacyLevels" @bind-Value="@SelectedValue" OnChange="OnChangeHandler" />
+</span>
+
+@code {
+    [Parameter]public string SelectedValue { get; set; }
+    [Parameter]public EventCallback<string> SelectedValueChanged { get; set; }
+    [Parameter]public EventCallback DropDownChanged { get; set; }
+
+    List<string> PrivacyLevels = new List<string>();
+
+    protected override void OnInitialized()
+    {
+
+        PrivacyLevels.Add("Public");
+        PrivacyLevels.Add("Private");
+        PrivacyLevels.Add("Discipline Only");
+        PrivacyLevels.Add("Discipline Leaders");
+
+    }
+
+    async Task OnChangeHandler(object newVal)
+    {
+        await SelectedValueChanged.InvokeAsync((string)newVal);
+        await DropDownChanged.InvokeAsync();
+    }
+}

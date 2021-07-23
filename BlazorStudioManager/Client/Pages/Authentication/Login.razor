@@ -1,0 +1,115 @@
+﻿@page "/login"
+@layout LoginLayout
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+@inject HttpClient client
+@inject CustomAuthStateProvider CustomAuthStateProvider
+
+<div class="StudioManagerBody" style="padding-bottom:200px;">
+    @if (IsLoading)
+    {
+        <IsLoadingLogo />
+    }
+    else
+    {
+        <div class="k-card" style="width: 80%;
+                    margin: auto;
+                    margin-top: 15px;">
+            <div class="k-card-header">
+                <h1 class="h2 font-weight-normal login-title" style="margin-left:auto; margin-right:auto;">
+                    Login
+                </h1>
+                @*<h2>Registration coming soon</h2>*@
+            </div>
+            <div class="k-card-body" style="width: 80%; margin: auto;">
+                <div class="container">
+                    <EditForm OnValidSubmit="OnSubmit" Model="loginRequest">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <label class="text-danger">@ErrorMessage</label>
+                        <div class="form-group">
+                            
+                            <TelerikTextBox Width="100%" @bind-Value="@loginRequest.UserName" Id="inputUserName" PlaceHolder="User Name" />
+                            <ValidationMessage For="@(() => loginRequest.UserName)" />
+                        </div>
+                        <div class="form-group">
+                            <TelerikTextBox Width="100%" @bind-Value="@loginRequest.Password" Id="inputPassword" PlaceHolder="Password" Password="true" />
+                            <ValidationMessage For="@(() => loginRequest.Password)" />
+                        </div>
+                        <div class="form-group" style="padding-left:20px;">
+                            <InputCheckbox id="inputRememberMe" class="form-check-input" @bind-Value="@loginRequest.RememberMe" />
+                            <PropertyLabel TItem="LoginRequest" aspfor="@nameof(loginRequest.RememberMe)"></PropertyLabel>
+                            @*<label class="form-check-label" for="inputRememberMe">Remember Me</label>*@
+                        </div>
+
+                        <div>
+                            <TelerikButton Id="btnSubmitLogin" ButtonType="ButtonType.Submit" Class="btn btn-lg btn-primary btn-block">Login</TelerikButton>
+
+                            <NavLink href="forgotpassword">
+                                <h6 class="font-weight-normal text-center">Forgot Password</h6>
+                            </NavLink>
+                            <NavLink href="register">
+                                <h6 class="font-weight-normal text-center">Create account</h6>
+                            </NavLink>
+                        </div>
+
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    }
+    @*@if (Installable)
+        {
+            <div class="fixed-bottom d-flex align-items-center justify-content-between install-prompt" style="background-color: black; color: white; padding-bottom:130px;">
+                <span>Did you know that you can install StudioManager as an App on your desktop or phone? Install this app?</span>
+                <span>
+                    <button class="btn btn-light btn-sm mx-2" @onclick="@InstallClicked">Install</button>
+                    <button class="btn btn-outline-light btn-sm" @onclick="@(()=>Installable=false)">Cancel </button>
+                </span>
+            </div>
+        }*@
+</div>
+
+@code{
+    bool IsLoading { get; set; }
+    LoginRequest loginRequest { get; set; } = new LoginRequest();
+    string ErrorMessage { get; set; }
+    string EditStatus { get; set; }
+
+    async Task OnSubmit()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            loginRequest.BaseUrl = navigationManager.BaseUri;
+            await CustomAuthStateProvider.Login(loginRequest);
+            navigationManager.NavigateTo("");
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    //// PWA infrastructure
+    //[Inject] IJSRuntime JSRuntime { get; set; } // needs to be here not as a @inject directive
+    //static bool Installable = false;
+    //static Action ml;
+
+    //[JSInvokable("InstallPwaPrompt")]
+    ////a named method so that it is easy to call from JS Interop
+    //public static Task InstallPwaPrompt()
+    //{
+    //    Installable = true;
+    //    ml.Invoke();
+    //    return Task.CompletedTask;
+    //}
+
+    //async void InstallClicked(MouseEventArgs args)
+    //{
+    //    Installable = false;
+    //    await JSRuntime.InvokeAsync<object>("OnPwaInstallClick");
+    //}
+}

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <PackageIcon>icon-512.png</PackageIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.1" />
+    <PackageReference Include="Azure.Identity" Version="1.4.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="5.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.8" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="5.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
+    <PackageReference Include="Telerik.Reporting.OpenXmlRendering" Version="15.1.21.716-hotfix" />
+    <PackageReference Include="Telerik.Reporting.WebServiceDataSource" Version="15.1.21.716-hotfix" />
+    <PackageReference Include="Telerik.ReportViewer.Blazor" Version="15.1.21.716-hotfix" />
+    <PackageReference Include="Telerik.WebReportDesigner.Blazor" Version="15.1.21.716-hotfix" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BlazorStudioManager.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Telerik.UI.for.Blazor" Version="2.25.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wwwroot\icon-512.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

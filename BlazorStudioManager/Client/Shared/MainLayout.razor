@@ -1,0 +1,548 @@
+@layout TelerikLayout
+@inherits LayoutComponentBase
+@inject NavigationManager navigationManager
+@inject CustomAuthStateProvider CustomAuthStateProvider
+@inject IJSRuntime js
+@inject IStudioManagerService service
+
+@using BlazorStudioManager.Shared
+@using BlazorStudioManager.Shared.Resources
+@using Telerik.Blazor.Services
+
+@* You can use the service for Telerik localization for your own code as well - for example the grid command buttons *@
+@inject ITelerikStringLocalizer Localizer
+@*Current UI culture (used for localization): @System.Threading.Thread.CurrentThread.CurrentUICulture.Name
+    <br />
+    Current thread culture (used for date and number formatting): @System.Threading.Thread.CurrentThread.CurrentCulture.Name
+
+    <CultureChooser />*@
+
+<div class="page">
+    <div class="main">
+        @if (IsLoading)
+        {
+            <h4>Loading...</h4>
+        }
+        else
+        {
+            <CascadingValue Value=currentUser Name="CurrentUser">
+                <CascadingValue Value=this Name="Main" IsFixed="true">
+                    <div class="top-row">
+                        @*<ProductionMenu @ref="ProductionMenu" ToggleDrawer="ToggleSideDrawer" ProfileToggleDrawer="ProfileToggleSideDrawer" />*@
+                    </div>
+
+                    <TelerikDrawer @ref="@ProfileDrawer" Data="ProfileDrawerItems" MiniMode="@ProfileMiniMode" Mode="@ProfileDrawerMode" Position="DrawerPosition.Right" SelectedItem="@currentUser.ProfileDrawerSelectedItem"
+                                   SelectedItemChanged="((DrawerItem item) => ProfileDrawerSelectedItemChangedHandler(item))">
+                        <Content>
+
+                        </Content>
+                    </TelerikDrawer>
+
+                    <TelerikDrawer @ref="@Drawer" Data="DrawerItems" MiniMode="@miniMode" Mode="@drawerMode" SelectedItem="@currentUser.DrawerSelectedItem"
+                                   SelectedItemChanged="((DrawerItem item) => DrawerSelectedItemChangedHandler(item))">
+                        <Content>
+
+                            @Body
+                        </Content>
+                    </TelerikDrawer>
+                </CascadingValue>
+            </CascadingValue>
+        }
+    </div>
+</div>
+
+<TelerikWindow Visible="@ShowHelp" VisibleChanged="@ShowHelpChangedHandler" Size="@WindowSize.Large" State="WindowState.Maximized">
+    <WindowTitle>
+        <strong>Help</strong>
+    </WindowTitle>
+    <WindowContent>
+        <CascadingValue Value=currentUser Name="CurrentUser">
+            @*<StudioManagerHelp />*@
+        </CascadingValue>
+    </WindowContent>
+    <WindowActions>
+        <WindowAction Name="Close"></WindowAction>
+    </WindowActions>
+</TelerikWindow>
+
+
+@code{
+    [CascadingParameter] Task<AuthenticationState> AuthenticationState { get; set; }
+    [CascadingParameter(Name = "Main")] public MainLayout main { get; set; }
+
+    CurrentUser currentUser { get; set; }
+    public bool SubscriptionEndingSoon { get; set; }
+    public int DaysUntilSubscriptionEnds { get; set; }
+    bool IsLoading { get; set; }
+    bool ShowHelp { get; set; }
+    public TimeSpan timespanString;
+
+    public TelerikDrawer<DrawerItem> Drawer { get; set; }
+    public async Task ToggleDrawer() => await Drawer.ToggleAsync();
+    public List<DrawerItem> DrawerItems { get; set; } = new List<DrawerItem>();
+    bool miniMode { get; set; }
+    DrawerMode drawerMode { get; set; }
+
+    public TelerikDrawer<DrawerItem> ProfileDrawer { get; set; }
+    public async Task ProfileToggleDrawer() => await ProfileDrawer.ToggleAsync();
+    public List<DrawerItem> ProfileDrawerItems { get; set; } = new List<DrawerItem>();
+    bool ProfileMiniMode { get; set; }
+    DrawerMode ProfileDrawerMode { get; set; }
+
+    string shareId { get; set; } = "";
+    string resetEmail { get; set; } = "";
+    string resetToken { get; set; } = "";
+
+    public int LocalSharedProductionId { get; set; }
+    public string EventType { get; set; } = "Performance";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (currentUser != null)
+        {
+            //navigationManager.NavigateTo("/", true);
+        }
+
+
+        if (navigationManager.Uri.Contains("/ResetPassword"))
+        {
+            var newUrl = navigationManager.Uri.ToString();
+
+            string s1 = "https://www.StudioManager.net";
+            bool runningOnline = newUrl.Contains(s1);
+
+            if (runningOnline)
+            {
+                var removeText = "https://www.StudioManager.net/ResetPassword/";
+                var s = newUrl.Replace(removeText, "");
+
+                string[] subs = s.Split('/');
+                resetEmail = subs[0];
+                resetToken = subs[1];
+            }
+            else
+            {
+                var removeText = "https://localhost:44385/ResetPassword/";
+                var s = newUrl.Replace(removeText, "");
+
+                string[] subs = s.Split('/');
+                resetEmail = subs[0];
+                resetToken = subs[1];
+            }
+            await DrawerSelectedItemChangedHandler(new DrawerItem { GoTo = "MyPasswordReset", Text = "MyPasswordReset" });
+        }
+        //else if (navigationManager.Uri.Contains("/sharedfiles/"))
+        //{
+        //    var newUrl = navigationManager.Uri.ToString();
+
+        //    string s1 = "https://www.StudioManager.net";
+        //    bool runningOnline = newUrl.Contains(s1);
+
+        //    if (runningOnline)
+        //    {
+        //        //var removeText = "https://www.StudioManager.net/sharedfiles/";
+        //        string[] subs = newUrl.Split('/');
+        //        shareId = subs[3];
+        //        //shareId = newUrl.Replace(removeText, "");
+        //    }
+        //    else
+        //    {
+        //        var removeText = "https://localhost:44385/sharedfiles/";
+        //        shareId = newUrl.Replace(removeText, "");
+        //    }
+
+        //    await DrawerSelectedItemChangedHandler(new DrawerItem { GoTo = "GridSharedFilesPublic", Text = "GridSharedFilesPublic" });
+        //}
+        else
+        {
+            if (!navigationManager.Uri.Contains("GridSharedFilesPublic"))
+            {
+                if (!(await AuthenticationState).User.Identity.IsAuthenticated)
+                {
+                    navigationManager.NavigateTo("/welcome");
+
+                }
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        currentUser = await CustomAuthStateProvider.CustGetCurrentUser(true);
+
+        LoadDrawerItems();
+        LoadProfileDrawerItems();
+
+        if (currentUser.ThemeUrl != null)
+        {
+            await js.InvokeVoidAsync("themeChanger.changeCss", currentUser.ThemeUrl, currentUser.IsThemeDark, currentUser.ThemeShade);
+        }
+
+        //BrowserResizeService.OnResize += BrowserHasResized;
+        //await js.InvokeAsync<object>("browserResize.registerResizeCallback");
+        //await BrowserHasResized();
+
+        currentUser.BackPageUrl = "/";
+
+        miniMode = false;
+        drawerMode = DrawerMode.Overlay;
+
+        IsLoading = false;
+
+        //var today = DateTime.UtcNow;
+
+        //var dateYear = currentUser.SubscriptionEndDate.Year;
+
+        //if (dateYear != 0001)
+        //{
+        //    if (currentUser.SubscriptionEndDate < today.AddDays(10))
+        //    {
+        //        SubscriptionEndingSoon = true;
+        //        DaysUntilSubscriptionEnds = (int)(today.Date - currentUser.SubscriptionEndDate.Date).TotalDays * -1;
+        //    }
+        //}
+    }
+
+    async Task LogoutClick()
+    {
+        await CustomAuthStateProvider.Logout();
+        navigationManager.NavigateTo("/auth/logout", true);
+    }
+    void LoginClick()
+    {
+        navigationManager.NavigateTo("/login");
+    }
+
+    //protected ProductionMenu ProductionMenu;
+
+    public async Task RefreshMenuItems()
+    {
+        if (currentUser.DisciplineName != null)
+        {
+            //await ProductionMenu.RefreshMenuItems();
+        }
+    }
+
+    #region Drawers
+    void ToggleSideDrawer()
+    {
+        Drawer.ToggleAsync();
+    }
+
+    void ProfileToggleSideDrawer()
+    {
+        ProfileDrawer.ToggleAsync();
+    }
+    public void LoadDrawerItems()
+    {
+        if (currentUser.CurrentUserRoleId != "bronze")
+        {
+            if (currentUser.DrawerSection == "CurrentProduction" && !currentUser.InPerformanceMode)
+            {
+                DrawerItems = new List<DrawerItem>();
+                DrawerItems.Add(new DrawerItem { Text = "Current Production", GoTo = "CurrentProduction" });
+                @if (currentUser.CurrentPerformanceId > 0)
+                {
+                    //DrawerItems.Add(new DrawerItem { Text = EventType, GoTo = "CurrentPerformance" });
+                }
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "My Productions", GoTo = "MyProductions" });
+                DrawerItems.Add(new DrawerItem { Text = "Logos", GoTo = "ProductionImages" });
+                DrawerItems.Add(new DrawerItem { Text = "Company", GoTo = "Company" });
+                DrawerItems.Add(new DrawerItem { Text = "Company Groups", GoTo = "CompanyGroups" });
+                DrawerItems.Add(new DrawerItem { Text = "Character Groups", GoTo = "CharacterGroups" });
+                DrawerItems.Add(new DrawerItem { Text = "Locations", GoTo = "Locations" });
+                DrawerItems.Add(new DrawerItem { Text = "Running Order", GoTo = "RunningOrder" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = currentUser.DisciplineName + " System", GoTo = "System" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Finance", GoTo = "Finance" });
+
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Inbox", Icon = "inbox", GoTo = "Inbox" });
+                DrawerItems.Add(new DrawerItem { Text = "Outbox", Icon = "inbox", GoTo = "Outbox" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+                //DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+                DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "far fa-comment" });
+            }
+            else if (currentUser.DrawerSection == "CurrentPerformance")
+            {
+                DrawerItems = new List<DrawerItem>();
+                //DrawerItems.Add(new DrawerItem { Text = EventType, GoTo = "CurrentPerformance" });
+                DrawerItems.Add(new DrawerItem { Text = "Current Production", GoTo = "CurrentProduction" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Company", GoTo = "PerformanceCompany" });
+                DrawerItems.Add(new DrawerItem { Text = "Running Order", GoTo = "PerformanceRunningOrder" });
+                DrawerItems.Add(new DrawerItem { Text = "Locations", GoTo = "PerformanceLocations" });
+                DrawerItems.Add(new DrawerItem { Text = "My Notes", GoTo = "MyNotes" });
+                DrawerItems.Add(new DrawerItem { Text = "Report Viewers", GoTo = "ReportViewers" });
+                DrawerItems.Add(new DrawerItem { Text = "Official Notes", GoTo = "OfficialNotes" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = currentUser.DisciplineName + " System", GoTo = "System" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Finance", GoTo = "Finance" });
+
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Inbox", Icon = "inbox", GoTo = "Inbox" });
+                DrawerItems.Add(new DrawerItem { Text = "Outbox", Icon = "inbox", GoTo = "Outbox" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+                //DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+                DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "far fa-comment" });
+            }
+            else if (currentUser.DrawerSection == "System")
+            {
+                DrawerItems = new List<DrawerItem>();
+                DrawerItems.Add(new DrawerItem { Text = "Current Production", GoTo = "CurrentProduction" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = currentUser.DisciplineName + " System", GoTo = "System" });
+                DrawerItems.Add(new DrawerItem { Text = "Add Multiple Devices", GoTo = "MultiDeviceAdd" });
+                DrawerItems.Add(new DrawerItem { Text = "Bundles", GoTo = "Bundles" });
+                DrawerItems.Add(new DrawerItem { Text = "Positions", GoTo = "Positions" });
+                DrawerItems.Add(new DrawerItem { Text = "Boxes", GoTo = "Boxes" });
+                DrawerItems.Add(new DrawerItem { Text = "Trucks", GoTo = "Trucks" });
+                DrawerItems.Add(new DrawerItem { Text = "Equipment Lists", GoTo = "EquipmentLists" });
+                DrawerItems.Add(new DrawerItem { Text = "Equipment Orders", GoTo = "EquipmentOrders" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Equipment Catalog", GoTo = "EquipmentCatalog" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Finance", GoTo = "Finance" });
+
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Inbox", Icon = "inbox", GoTo = "Inbox" });
+                DrawerItems.Add(new DrawerItem { Text = "Outbox", Icon = "inbox", GoTo = "Outbox" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+                //DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+                DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "far fa-comment" });
+            }
+            else if (currentUser.DrawerSection == "Finance")
+            {
+                DrawerItems = new List<DrawerItem>();
+                DrawerItems = new List<DrawerItem>();
+                DrawerItems.Add(new DrawerItem { Text = "Current Production", GoTo = "CurrentProduction" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Budgets", GoTo = "Budgets" });
+                DrawerItems.Add(new DrawerItem { Text = "Invoices", GoTo = "Invoices" });
+                DrawerItems.Add(new DrawerItem { Text = "Payroll", GoTo = "Payroll" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = currentUser.DisciplineName + " System", GoTo = "System" });
+
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Inbox", Icon = "inbox", GoTo = "Inbox" });
+                DrawerItems.Add(new DrawerItem { Text = "Outbox", Icon = "inbox", GoTo = "Outbox" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+                //DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+                DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "far fa-comment" });
+            }
+        }
+        else
+        {
+            if (currentUser.DrawerSection == "CurrentProduction")
+            {
+                DrawerItems = new List<DrawerItem>();
+                DrawerItems.Add(new DrawerItem { Text = "Current Production", GoTo = "CurrentProduction" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "My Productions", GoTo = "MyProductions" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = currentUser.DisciplineName + " System", GoTo = "System" });
+
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Inbox", Icon = "inbox", GoTo = "Inbox" });
+                DrawerItems.Add(new DrawerItem { Text = "Outbox", Icon = "inbox", GoTo = "Outbox" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+                //DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+                DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "far fa-comment" });
+            }
+            else if (currentUser.DrawerSection == "System")
+            {
+                DrawerItems = new List<DrawerItem>();
+                DrawerItems.Add(new DrawerItem { Text = "Current Production", GoTo = "CurrentProduction" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "System", GoTo = "System" });
+                DrawerItems.Add(new DrawerItem { Text = "Bundles", GoTo = "Bundles" });
+                DrawerItems.Add(new DrawerItem { Text = "Boxes", GoTo = "Boxes" });
+                DrawerItems.Add(new DrawerItem { Text = "Trucks", GoTo = "Trucks" });
+
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Inbox", Icon = "inbox", GoTo = "Inbox" });
+                DrawerItems.Add(new DrawerItem { Text = "Outbox", Icon = "inbox", GoTo = "Outbox" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+                //DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+                //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                //DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+                DrawerItems.Add(new DrawerItem { IsSeparator = true });
+                DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+                DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "far fa-comment" });
+            }
+        }
+        //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+        //DrawerItems.Add(new DrawerItem { Text = "Inbox", GoTo = "Inbox" });
+        //DrawerItems.Add(new DrawerItem { Text = "Outbox", GoTo = "Outbox" });
+        //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+        //DrawerItems.Add(new DrawerItem { Text = "Calendar", GoTo = "Scheduler", Icon = "calendar" });
+        ////DrawerItems.Add(new DrawerItem { Text = "Notifications", Icon = "notification" });
+        ////DrawerItems.Add(new DrawerItem { IsSeparator = true });
+        ////DrawerItems.Add(new DrawerItem { Text = "Chat", GoTo = "Chat", Icon = "comment" });
+        //DrawerItems.Add(new DrawerItem { IsSeparator = true });
+        //DrawerItems.Add(new DrawerItem { Text = "Help", GoTo = "Help", Icon = "question-circle" });
+    }
+    public void LoadProfileDrawerItems()
+    {
+        if (currentUser.CurrentUserRoleId != "bronze")
+        {
+            ProfileDrawerItems = new List<DrawerItem>();
+            ProfileDrawerItems.Add(new DrawerItem { Text = "My Profile", GoTo = "MyProfile" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Production Files", GoTo = "ProductionFiles" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Script Updates", GoTo = "ScriptUpdates" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "My Subscription", GoTo = "MySubscription" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Purchase Gift Subscription", GoTo = "PurchaseGiftSubscription" });
+            ProfileDrawerItems.Add(new DrawerItem { IsSeparator = true });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Contacts People", GoTo = "ContactsPeople" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Contacts Venues", GoTo = "ContactsVenues" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Contacts Companies", GoTo = "ContactsCompanies" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Contacts Accommodations", GoTo = "ContactsAccommodations" });
+            ProfileDrawerItems.Add(new DrawerItem { IsSeparator = true });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Drop Down Options", GoTo = "DropDownOptions" });
+            ProfileDrawerItems.Add(new DrawerItem { IsSeparator = true });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Equipment Catalog", GoTo = "EquipmentCatalog" });
+            ProfileDrawerItems.Add(new DrawerItem { IsSeparator = true });
+            //ProfileDrawerItems.Add(new DrawerItem { Text = "About StudioManager", GoTo = "AboutStudioManager" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Logout", GoTo = "Logout" });
+        }
+        else
+        {
+            ProfileDrawerItems = new List<DrawerItem>();
+            ProfileDrawerItems.Add(new DrawerItem { Text = "My Profile", GoTo = "MyProfile" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Script Updates", GoTo = "ScriptUpdates" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "My Subscription", GoTo = "MySubscription" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Purchase Gift Subscription", GoTo = "PurchaseGiftSubscription" });
+            ProfileDrawerItems.Add(new DrawerItem { IsSeparator = true });
+            //ProfileDrawerItems.Add(new DrawerItem { Text = "About StudioManager", GoTo = "AboutStudioManager" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Logout", GoTo = "Logout" });
+        }
+
+        if (currentUser.IsAdministrator)
+        {
+            ProfileDrawerItems.Add(new DrawerItem { IsSeparator = true });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "My Themes", GoTo = "MyThemes" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Page Helpers", GoTo = "PageHelpers" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Subscriptions", GoTo = "Subscriptions" });
+            ProfileDrawerItems.Add(new DrawerItem { Text = "Administrator Page", GoTo = "AdministratorPage" });
+        }
+    }
+    public async Task ProfileDrawerSelectedItemChangedHandler(DrawerItem item)
+    {
+        if (item.GoTo == "Logout")
+        {
+            await CustomAuthStateProvider.Logout();
+            await js.InvokeVoidAsync("themeChanger.changeCss", "/GridThemes/HighContrast.css", true, "Dark");
+            navigationManager.NavigateTo(" ", true);
+        }
+        else
+        {
+            currentUser.ProfileDrawerSelectedItem = item;
+            await DrawerSelectedItemChangedHandler(item);
+        }
+    }
+    public async Task DrawerSelectedItemChangedHandler(DrawerItem item)
+    {
+        currentUser.CurrentPageName = item.Text;
+        if (item.GoTo != "Help")
+        {
+            //currentUser.CurrentPageName = item.Text;
+            currentUser.HelpId = item.GoTo;
+        }
+
+        if (item.GoTo == "Help")
+        {
+            ShowHelp = true;
+            StateHasChanged();
+        }
+        else
+        {
+            currentUser.DrawerSection = item.GoTo;
+            if (item.GoTo == "CurrentProduction")
+            {
+                currentUser.InPerformanceMode = false;
+                currentUser.ViewingPastAppointment = false;
+
+            }
+            else if (item.GoTo == "CurrentPerformance")
+            {
+                currentUser.InPerformanceMode = true;
+            }
+            LoadDrawerItems();
+            await RefreshMenuItems();
+            if (currentUser.DrawerSelectedItem.GoTo == item.GoTo)
+            {
+                currentUser.DrawerSelectedItem = new DrawerItem();
+                StateHasChanged();
+            }
+            currentUser.DrawerSelectedItem = item;
+            StateHasChanged();
+            await RefreshMenuItems();
+        }
+    }
+    #endregion
+
+    #region Browser Resize
+    //private async Task BrowserHasResized()
+    //{
+    //    BrowserDimensions gridDimensions = await browserResizeService.GetDimensions(currentUser.GridRowHeight, false);
+    //    currentUser.GridWidth = gridDimensions.GridWidth;
+    //    currentUser.GridHeight = gridDimensions.GridHeight;
+    //    currentUser.GalleryWidth = gridDimensions.GalleryWidth;
+    //    currentUser.GalleryHeight = gridDimensions.GalleryHeight;
+    //    currentUser.InnerGalleryWidth = gridDimensions.InnerGalleryWidth;
+    //    currentUser.InnerGalleryHeight = gridDimensions.InnerGalleryHeight;
+    //    currentUser.PageSize = gridDimensions.PageSize;
+    //    currentUser.GalleryPageSize = gridDimensions.GalleryPageSize;
+    //    currentUser.ImagePaneSize = gridDimensions.ImagePaneSize;
+    //    currentUser.ColSpan = gridDimensions.ColSpan;
+    //    currentUser.FormHeight = gridDimensions.FormHeight;
+    //    currentUser.FormWidth = gridDimensions.FormWidth;
+    //    currentUser.GridOrGallery = gridDimensions.GridOrGallery;
+    //    currentUser.ImageSize = gridDimensions.ImageSize;
+    //    currentUser.ImageContainerSize = gridDimensions.ImageContainerSize;
+    //    currentUser.Width = gridDimensions.Width;
+    //    currentUser.Height = gridDimensions.Height;
+
+    //    StateHasChanged();
+    //}
+
+    //public void Dispose()
+    //{
+    //    BrowserResizeService.OnResize -= BrowserHasResized;
+    //}
+    void ShowHelpChangedHandler()
+    {
+        ShowHelp = false;
+    }
+    #endregion
+}

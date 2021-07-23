@@ -1,0 +1,56 @@
+﻿@page "/confirmemail/{email}/{token}"
+@layout AuthLayout
+@inject NavigationManager navigationManager
+@inject HttpClient client
+@inject CustomAuthStateProvider CustomAuthStateProvider
+
+<div class="StudioManagerBody">
+    @if (IsLoading)
+    {
+        <IsLoadingLogo />
+    }
+    else
+    {
+        <div class="k-card" style="width: 80%;
+                margin: auto;
+                margin-top: 15px;">
+            <div class="k-card-header">
+                <h1 class="h2 font-weight-normal login-title" style="margin-left:auto; margin-right:auto;">
+                    Confirm Email
+                </h1>
+            </div>
+            <div class="k-card-body" style="width: 80%; margin: auto;">
+                <div class="container">
+                    <div>
+                        <h4>Your email has been confirmed.  You can login now.</h4>
+                        <NavLink href="login">
+                            <h6 class="font-weight-normal text-center">Click to Login</h6>
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string Email { get; set; }
+    [Parameter] public string Token { get; set; }
+
+    bool IsLoading { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        EmailConfirmationRequest emailConfirmation = new EmailConfirmationRequest()
+        {
+            Email = Email,
+            Token = Token
+        };
+
+        await CustomAuthStateProvider.ConfirmEmail(emailConfirmation);
+        IsLoading = false;
+    }
+
+}

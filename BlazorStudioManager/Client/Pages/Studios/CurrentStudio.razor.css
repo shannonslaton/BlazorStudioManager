@@ -1,0 +1,17 @@
+﻿::deep .hidden-button {
+    margin-left: 5px;
+}
+
+div.sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 40px;
+    z-index: 100;
+}
+
+div.stickytop {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    z-index: 100;
+}
+

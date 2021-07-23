@@ -1,0 +1,75 @@
+﻿@page "/privacy"
+@layout AuthLayout
+@inject NavigationManager navigationManager
+@inject HttpClient client
+
+@if (IsLoading)
+{
+    <IsLoadingLoggedIn />
+}
+else
+{
+    <div class="StudioManagerBody" style="font-size:24px;">
+        <div class="k-card" style="width:80%; max-width:1400px; margin-left:auto; margin-right:auto; margin-top:15px;">
+            <div style="margin-left:auto; margin-right:auto; margin-top:25px; margin-bottom:25px;">
+                <TelerikListView Data="@SubscriptionLevels" Width="100%">
+                    <HeaderTemplate>
+                        <div style="margin-left:10px;"><h2>Subscription Levels and Pricing</h2></div>
+                    </HeaderTemplate>
+                    <Template>
+                        @{
+                                StudioManagerNetRole currItem = context as StudioManagerNetRole;
+                            <div class="listview-item" style="text-align:center;">
+                                <h4>@context.Name</h4>
+                                <p>@context.Feature1</p>
+                                <p>@context.Feature2</p>
+                                <p>@context.Feature3</p>
+                                <p>@context.Feature4</p>
+                                <p>@context.Feature5</p>
+                                <p>@context.Feature6</p>
+                                <p>$@context.YearlyCost @context.Feature7</p>
+                                <div style="width:400px;"><TelerikButton Id="btnRegister" OnClick="@RegisterClick" ButtonType="ButtonType.Button" Class="k-button k-flat k-primary">Join Now</TelerikButton></div>
+                            </div>
+                        }
+                    </Template>
+                </TelerikListView>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code{
+    bool IsLoading { get; set; }
+    List<StudioManagerNetRole> SubscriptionLevels { get; set; }
+    void RegisterClick()
+    {
+        navigationManager.NavigateTo("/register");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        SubscriptionLevels = await client.GetFromJsonAsync<List<StudioManagerNetRole>>("api/auth/GetPricingNetRoles");
+        IsLoading = false;
+    }
+}
+
+<style>
+    .listview-item {
+        height: 375px;
+        width: 250px;
+        display: inline-block;
+        margin: 10px;
+        border: 1px solid black;
+        border-radius: 10px;
+        padding: 10px;
+        border-color: white;
+    }
+
+    .my-listview .k-listview-content { /* justifies the items in the ListView */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+</style>

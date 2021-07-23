@@ -1,0 +1,320 @@
+﻿@inject NavigationManager navigationManager
+@inject IJSRuntime js
+@inject HttpClient client
+@inject CustomAuthStateProvider CustomAuthStateProvider
+
+<div class="MobileClass" style="background-color: #f6f6f6">
+
+
+    <TelerikMenu Data="@MenuItemsMobile"
+                 Orientation="MenuOrientation.Horizontal"
+                 OnClick="@((MenuItem item) => OnMenuItemClickHandler(item))"
+                 ParentIdField="@nameof(MenuItem.MenuItemId)"
+                 IdField="@nameof(MenuItem.Id)"
+                 TextField="@nameof(MenuItem.MenuItemName)"
+                 ImageUrlField="@nameof(MenuItem.Image)"
+                 IconClassField="@nameof(MenuItem.MyIconClass)"
+                 IconField="@nameof(MenuItem.MyIconField)"
+                 ItemsField="@nameof(MenuItem.SubMenuItemList)">
+        <ItemTemplate>
+            @{ var item = context as MenuItem;
+
+                if (item.Id == 99)
+                {
+                    <div>
+                        <img src="@context.Image" style="height: 30px;" />
+                    </div>
+                }
+                else if (item.Id == 5000)
+                {
+                    <div>
+                    </div>
+                }
+                else if (item.Id == 6000)
+                {
+                    <div>
+                        @if (!currentUser.HasEditRights)
+                        {
+                            <strong>View Mode Only</strong>
+                        }
+                    </div>
+                }
+                else
+                {
+                    if (item.MyIconField != null)
+                    {
+                        <div>
+                            <i class='@item.MyIconField'>@item.MenuItemName</i>
+                        </div>
+                    }
+                    if (item.MyIconClass != null)
+                    {
+                        <div>
+                            <TelerikButton IconClass="@item.MyIconClass">@item.MenuItemName</TelerikButton>
+                        </div>
+                    }
+                    else
+                    {
+                        if (item.Image != null)
+                        {
+                            if (item.Id == 50)
+                            {
+                                <div>
+                                    <img src="@context.Image" style="height: 30px;" />
+                                    <strong>@item.MenuItemName</strong>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <img src="@context.Image" style="height: 30px;" />
+                                    @item.MenuItemName
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div>
+                                @item.MenuItemName
+                            </div>
+                        }
+                    }
+                }
+            }
+        </ItemTemplate>
+    </TelerikMenu>
+</div>
+<div class="WideScreenClass" style="background-color: #f6f6f6">
+    <TelerikMenu Data="@MenuItemsWideScreen"
+                 Orientation="MenuOrientation.Horizontal"
+                 OnClick="@((MenuItem item) => OnMenuItemClickHandler(item))"
+                 ParentIdField="@nameof(MenuItem.MenuItemId)"
+                 IdField="@nameof(MenuItem.Id)"
+                 TextField="@nameof(MenuItem.MenuItemName)"
+                 ImageUrlField="@nameof(MenuItem.Image)"
+                 IconClassField="@nameof(MenuItem.MyIconClass)"
+                 IconField="@nameof(MenuItem.MyIconField)"
+                 ItemsField="@nameof(MenuItem.SubMenuItemList)">
+        <ItemTemplate>
+            @{ var item = context as MenuItem;
+
+                if (item.Id == 99)
+                {
+                    <div>
+                        <img src="@context.Image" style="height: 30px;" />
+                    </div>
+                }
+                else if (item.Id == 5000)
+                {
+                    <div>
+                    </div>
+                }
+                else if (item.Id == 6000)
+                {
+                    <div>
+                        @if (!currentUser.HasEditRights)
+                        {
+                            <strong>View Mode Only</strong>
+                        }
+                    </div>
+                }
+                else
+                {
+                    if (item.MyIconField != null)
+                    {
+                        <div>
+                            <i class='@item.MyIconClass'>@item.MenuItemName</i>
+                        </div>
+                    }
+                    if (item.MyIconClass != null)
+                    {
+                        <div>
+                            <i class='@item.MyIconClass'>@item.MenuItemName</i>
+                        </div>
+                    }
+                    else
+                    {
+                        if (item.Image != null)
+                        {
+                            if (item.Id == 50)
+                            {
+                                <div>
+                                    <img src="@context.Image" style="height: 30px;" />
+                                    <strong>@item.MenuItemName</strong>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <img src="@context.Image" style="height: 30px;" />
+                                    @item.MenuItemName
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div>
+                                @item.MenuItemName
+                            </div>
+                        }
+                    }
+                }
+            }
+        </ItemTemplate>
+    </TelerikMenu>
+</div>
+
+@code {
+    [CascadingParameter(Name = "CurrentUser")] public CurrentUser currentUser { get; set; }
+    [CascadingParameter(Name = "Main")] public MainLayout main { get; set; }
+    [Parameter] public EventCallback ToggleDrawer { get; set; }
+    [Parameter] public EventCallback ProfileToggleDrawer { get; set; }
+    bool NewUserWindowVisible { get; set; }
+    bool NewFeaturesWindowVisible { get; set; }
+    List<MenuItem> MenuItemsWideScreen { get; set; }
+    List<MenuItem> MenuItemsMobile { get; set; }
+    MenuItem ClickedItem { get; set; }
+    string Url { get; set; }
+    bool isDark { get; set; }
+    string GridThemeshade { get; set; }
+    List<Discipline> Disciplines { get; set; }
+    string previousUrl { get; set; } = "/";
+
+    public string PageName { get; set; } = "Current Production";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Disciplines = await client.GetFromJsonAsync<List<Discipline>>("api/disciplines/GetDisciplines");
+
+        CreateMenuItems();
+    }
+
+    void CreateMenuItems()
+    {
+        MenuItemsWideScreen = new List<MenuItem>()
+        {
+
+
+        };
+
+        MenuItemsMobile = new List<MenuItem>()
+        {
+
+        };
+
+        var toggleDrawerMobile = new MenuItem()
+        {
+            Id = 250,
+            Image = "/favicon-32x32.png",
+        };
+        MenuItemsWideScreen.Add(toggleDrawerMobile);
+        MenuItemsMobile.Add(toggleDrawerMobile);
+
+        var iconMenuWidescreen = new MenuItem()
+        {
+            Id = 250,
+            MenuItemName = PageName
+        };
+        MenuItemsWideScreen.Add(iconMenuWidescreen);
+        MenuItemsMobile.Add(iconMenuWidescreen);
+
+        var ddMenuWidescreen = new MenuItem()
+        {
+            Id = 5000
+        };
+
+        if (currentUser.CurrentUserRoleId != "bronze")
+        {
+            MenuItemsWideScreen.Add(ddMenuWidescreen);
+            //MenuItemsMobile.Add(ddMenuWidescreen);
+        }
+
+
+        var profileSectionWide = new MenuItem()
+        {
+            Id = 2150,
+            Image = currentUser.ContactsImageUrl,
+        };
+
+        MenuItemsWideScreen.Add(profileSectionWide);
+        MenuItemsMobile.Add(profileSectionWide);
+
+        var modeMenuWidescreen = new MenuItem()
+        {
+            Id = 6000
+        };
+        MenuItemsWideScreen.Add(modeMenuWidescreen);
+        MenuItemsMobile.Add(modeMenuWidescreen);
+
+        var today = DateTime.UtcNow;
+
+        var dateYear = currentUser.SubscriptionEndDate.Year;
+
+        if (dateYear != 0001)
+        {
+            if (currentUser.SubscriptionEndDate < today.AddDays(10))
+            {
+                main.SubscriptionEndingSoon = true;
+                main.DaysUntilSubscriptionEnds = (int)(today.Date - currentUser.SubscriptionEndDate.Date).TotalDays * -1;
+            }
+        }
+
+        if (main.SubscriptionEndingSoon)
+        {
+            if (main.DaysUntilSubscriptionEnds > 0)
+            {
+                var subscription = new MenuItem()
+                {
+                    Id = 7000,
+                    MenuItemName = "Your subscription ends in " + main.DaysUntilSubscriptionEnds + " days. Renew here."
+                };
+                MenuItemsWideScreen.Add(subscription);
+                MenuItemsMobile.Add(subscription);
+            }
+            else
+            {
+                var subscription = new MenuItem()
+                {
+                    Id = 7000,
+                    MenuItemName = "Guest Account.  Subscribe Here"
+                };
+                MenuItemsWideScreen.Add(subscription);
+                MenuItemsMobile.Add(subscription);
+            }
+        }
+    }
+
+    protected async Task OnMenuItemClickHandler(MenuItem item)
+    {
+        if (item.Id == 250) //Toggle Drawer
+        {
+            await ToggleDrawer.InvokeAsync();
+        }
+        if (item.Id == 2150) //Toggle Profile Drawer
+        {
+            await ProfileToggleDrawer.InvokeAsync();
+        }
+        if (item.Id == 7000) //Subscribe
+        {
+            var drawerItem = new DrawerItem(){ Text = "My Subscription", GoTo = "MySubscription" };
+            await main.DrawerSelectedItemChangedHandler(drawerItem);
+        }
+
+    }
+
+    public async Task RefreshMenuItems()
+    {
+        PageName = currentUser.CurrentPageName;
+        await OnInitializedAsync();
+    }
+
+    private async Task ThemeChanged()
+    {
+        isDark = !isDark;
+        GridThemeshade = "Medium";
+        await js.InvokeVoidAsync("MyInterop.ChangeTheme", isDark, GridThemeshade);
+    }
+
+
+}

@@ -1,0 +1,51 @@
+﻿@layout TelerikLayout
+@inherits LayoutComponentBase
+@inject NavigationManager navigationManager
+@inject HttpClient client
+
+<div class="page">
+
+    @*<div class="sidebar">
+            <AuthorizeView>
+                <Authorized>
+                </Authorized>
+                <Authorizing>
+                </Authorizing>
+                <NotAuthorized>
+                    <NavMenu />
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>*@
+    <AuthorizeView>
+        <Authorized>
+            <div class="main">
+                @Body
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
+</div>
+
+@code{
+    [CascadingParameter] Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!(await AuthenticationState).User.Identity.IsAuthenticated)
+        {
+            navigationManager.NavigateTo("/welcome");
+        }
+    }
+    async Task LogoutClick()
+    {
+        var result = await client.PostAsync("api/auth/logout", null);
+        result.EnsureSuccessStatusCode();
+
+        //await authStateProvider.Logout();
+        navigationManager.NavigateTo("/auth/logout", true);
+    }
+    void LoginClick()
+    {
+        navigationManager.NavigateTo("/login");
+    }
+}

@@ -1,0 +1,83 @@
+﻿@page "/"
+@inject IJSRuntime js
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<AuthorizeView>
+    <Authorized>
+        @*<h1>Hello @context.User.Identity.Name !!</h1>*@
+        @*<div class="LoggedInBody"><CurrentProduction /></div>*@
+        <CurrentStudio />
+    </Authorized>
+    <Authorizing>
+        @*<IsLoadingLogo />*@
+        <h1>Loading Index ...</h1>
+    </Authorizing>
+    @*<NotAuthorized>
+            <h1>Not Authorized</h1>
+        </NotAuthorized>*@
+</AuthorizeView>
+
+
+@if (ShowChat)
+{
+    <div class="form-group">
+        <label>
+            User:
+            <input @bind="userInput" />
+        </label>
+    </div>
+    <div class="form-group">
+        <label>
+            Message:
+            <input @bind="messageInput" size="50" />
+        </label>
+    </div>
+    <button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+
+    <hr>
+
+    <ul id="messagesList">
+        @foreach (var message in messages)
+        {
+            <li>@message</li>
+        }
+    </ul>
+}
+
+@code {
+    private HubConnection hubConnection;
+    private List<string> messages = new List<string>();
+    private string userInput;
+    private string messageInput;
+
+    public bool ShowChat { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            messages.Add(encodedMsg);
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    async Task Send() =>
+        await hubConnection.SendAsync("SendMessage", userInput, messageInput);
+
+    public bool IsConnected =>
+        hubConnection.State == HubConnectionState.Connected;
+
+    public void Dispose()
+    {
+        _ = hubConnection?.DisposeAsync();
+    }
+}

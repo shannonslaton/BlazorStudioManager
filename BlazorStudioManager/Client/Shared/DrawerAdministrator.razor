@@ -1,0 +1,106 @@
+﻿@*<TelerikDrawer @ref="@Drawer" Data="Data" MiniMode="false" Mode="@Mode">
+    <Content>
+        <div class="mode-switch">
+            <p class="mode-text">
+                <strong>Mode</strong>
+            </p>
+            <div class="mode-radio-buttons">
+                <input type="radio"
+                       class="k-radio"
+                       id="push"
+                       value="@DrawerMode.Push.ToString()"
+                       name="@DrawerMode.Push.ToString()"
+                       checked="@(Mode == DrawerMode.Push)"
+                       @onchange="RadioSelection" />
+                <label for="push" class="k-radio-label">Push</label>
+                <input type="radio"
+                       id="overlay"
+                       class="k-radio"
+                       value="@DrawerMode.Overlay.ToString()"
+                       name="@DrawerMode.Overlay.ToString()"
+                       checked="@(Mode ==DrawerMode.Overlay)"
+                       @onchange="RadioSelection" />
+                <label for="overlay" class="k-radio-label">Overlay</label>
+            </div>
+        </div>
+
+        <TelerikButton OnClick="@ToggleDrawer" Primary="true">Toggle Drawer state</TelerikButton>
+    </Content>
+</TelerikDrawer>
+
+@code {
+    TelerikDrawer<DrawerItem> Drawer { get; set; }
+    DrawerMode Mode { get; set; }
+
+    void RadioSelection(ChangeEventArgs args)
+    {
+        Mode = args.Value.ToString() == DrawerMode.Push.ToString()
+            ? DrawerMode.Push
+            : DrawerMode.Overlay;
+    }
+
+    IEnumerable<DrawerItem> Data { get; set; } =
+    new List<DrawerItem>
+    {
+            new DrawerItem { Text = "Inbox", Icon = IconName.Inbox },
+            new DrawerItem { IsSeparator = true },
+            new DrawerItem { Text = "Notifications", Icon = IconName.Notification },
+            new DrawerItem { Text = "Calendar", Icon = IconName.Calendar },
+            new DrawerItem { IsSeparator = true },
+            new DrawerItem { Text = "Attachments", Icon = IconName.HyperlinkEmail },
+            new DrawerItem { Text = "Favourites", Icon = IconName.StarOutline }
+    };
+
+    async Task ToggleDrawer() => await Drawer.ToggleAsync();
+
+    class DrawerItem
+    {
+        public string Text { get; set; }
+
+        public string Icon { get; set; }
+
+        public bool IsSeparator { get; set; }
+    }
+}
+
+<style>
+    #demo-runner {
+        height: 600px;
+    }
+
+    .k-drawer-container {
+        position: relative;
+        width: 100%;
+        height: 95%;
+    }
+
+        .k-drawer-container.k-drawer-overlay .k-drawer {
+            position: absolute;
+        }
+
+    .k-drawer-content {
+        padding: 10px;
+    }
+
+    .k-overlay {
+        position: absolute;
+    }
+
+    .mode-switch {
+        margin-bottom: 30px;
+    }
+
+    .mode-text {
+        font-size: 23px;
+    }
+
+    .mode-radio-buttons {
+        padding-left: 20px;
+        font-size: 15px;
+    }
+
+        .mode-radio-buttons input {
+            width: 15px;
+            height: 15px;
+        }
+</style>*@

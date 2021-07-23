@@ -1,0 +1,27 @@
+﻿@page "/faq"
+@layout AuthLayout
+@inject NavigationManager navigationManager
+
+<div class="StudioManagerBody" >
+    <div class="k-card" style="width:80%; margin:auto; margin-top:15px;">
+        <div class="k-card-header">
+            Frequently Asked Questions
+        </div>
+
+        <div class="k-card-body">
+        </div>
+
+        <div class="k-card-actions">
+            <TelerikButton Id="btnRegister" OnClick="@RegisterClick" ButtonType="ButtonType.Button" Class="k-button k-flat k-primary">Join Now</TelerikButton>
+        </div>
+        <div style="margin:15px; text-align:right; padding-bottom:100px;"><label>v1.126</label></div>
+    </div>
+</div>
+
+
+@code{
+    void RegisterClick()
+    {
+        navigationManager.NavigateTo("/register");
+    }
+}

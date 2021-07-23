@@ -1,0 +1,50 @@
+﻿@layout TelerikLayout
+@inherits LayoutComponentBase
+@inject NavigationManager navigationManager
+@inject HttpClient client
+
+@if (IsLoading)
+{
+}
+else
+{
+    <div class="page">
+        <div class="main">
+            @{
+                if (DaysUntilSubscriptionEnds < 0)
+                {
+                    <h4>Your subscription has ended.  You have to renew your subcription to have access to your productions.</h4>
+                }
+            }
+            <div class="top-row">
+                <HeaderRenew />
+            </div>
+            @Body
+        </div>
+    </div>
+
+    <FooterHome />
+}
+
+
+@code{
+    CurrentUser currentUser { get; set; }
+    bool IsLoading { get; set; }
+
+    int DaysUntilSubscriptionEnds { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        await Task.Delay(1);
+        //if (currentUser != null && currentUser.IsAuthenticated)
+        //{
+        //    currentUser = await client.GetFromJsonAsync<CurrentUser>("api/auth/currentuserinfo");
+        //}
+
+        var today = DateTime.UtcNow;
+        DaysUntilSubscriptionEnds = (int)(today.Date - currentUser.SubscriptionEndDate.Date).TotalDays * -1;
+
+        IsLoading = false;
+    }
+}
