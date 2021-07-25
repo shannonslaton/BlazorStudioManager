@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Telerik.WebReportDesigner.Services;
 using BlazorStudioManager.Shared;
+using Telerik.Reporting.Processing;
+using Microsoft.AspNetCore.Http;
 
 namespace BlazorStudioManager.Server
 {
@@ -48,7 +50,7 @@ namespace BlazorStudioManager.Server
             //cont = new ReportTemplatesController(_contextUser, _contextIdentity);
             //currentUserId = cont.GetCurrentUser();
 
-            
+
         }
 
         /// <summary>
@@ -65,7 +67,7 @@ namespace BlazorStudioManager.Server
             //var identity = (ClaimsPrincipal)Thread.CurrentPrincipal;
             //var UserId = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var foundList = _contextUser.ReportTemplates;
+            var foundList = _contextIdentity.ReportTemplates;
             //var ConnectionString = "Data Source=.\\SQLExpress;Initial Catalog=ShowBuilderBlazorUser0;Trusted_Connection=True;MultipleActiveResultSets=false";
             //SqlConnection connection = new SqlConnection(ConnectionString);
 
@@ -98,7 +100,7 @@ namespace BlazorStudioManager.Server
         public byte[] GetDefinition(string definitionId)
         {
             var returnTemplate = new byte[7000];
-            var foundTemplate = _contextUser.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
+            var foundTemplate = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
             if (foundTemplate != null)
             {
                 return foundTemplate.Layout;
@@ -127,8 +129,8 @@ namespace BlazorStudioManager.Server
                 OwnerContactRecId = 1
             };
 
-            _contextUser.Add(saveTemplate);
-            _contextUser.SaveChanges();
+            _contextIdentity.Add(saveTemplate);
+            _contextIdentity.SaveChanges();
             // Save the report definiton bytes to the database.
         }
 

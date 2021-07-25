@@ -54,6 +54,7 @@ namespace BlazorStudioManager.Server.Data
         public virtual DbSet<ReportDefinition> ReportDefinitions { get; set; }
         public virtual DbSet<ColorName> ColorNames { get; set; }
         public virtual DbSet<ScheduleResource> ScheduleResources { get; set; }
+        public virtual DbSet<ReportTemplate> ReportTemplates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -343,6 +344,11 @@ namespace BlazorStudioManager.Server.Data
             });
 
             modelBuilder.Entity<DisciplineMerge>(entity =>
+            {
+                entity.HasKey(e => e.RecId);
+            });
+
+            modelBuilder.Entity<ReportTemplate>(entity =>
             {
                 entity.HasKey(e => e.RecId);
             });

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using BlazorStudioManager.Shared;
 using BlazorStudioManager.Shared.Models;
+using BlazorStudioManager.Shared.IdentityModels;
 
 namespace BlazorStudioManager.Server.Data
 {
@@ -12,7 +13,7 @@ namespace BlazorStudioManager.Server.Data
 
         public virtual DbSet<Catalog> Catalogs { get; set; }
         public virtual DbSet<DropDownOption> DropDownOptions { get; set; }
-        public virtual DbSet<ReportTemplate> ReportTemplates { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,11 +29,6 @@ namespace BlazorStudioManager.Server.Data
                 new Catalog() { RecId = 2, CatalogName = "Sound" },
                 new Catalog() { RecId = 3, CatalogName = "Lights" }
             );
-
-            modelBuilder.Entity<ReportTemplate>(entity =>
-            {
-                entity.HasKey(e => e.RecId);
-            });
 
             modelBuilder.Entity<DropDownOption>(entity =>
             {

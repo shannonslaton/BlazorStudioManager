@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Web;
 using System.Text;
 using BlazorStudioManager.Shared.ReportModels.json;
+using Telerik.Reporting.Processing;
 
 namespace BlazorStudioManager
 {
@@ -19,7 +20,7 @@ namespace BlazorStudioManager
         const string DATAGRID_EXAMPLE_REPORT = "DataGridExampleReport.trdx";
         const string SALES_EXAMPLE_REPORT = "productSalesExampleReport.trdx";
         const string PRESENTATION_EXAMPLE_REPORT = "PresentationExampleReport.trdx";
-        Report gridReportInstance;
+        Telerik.Reporting.Report gridReportInstance;
         string reportPath;
 
         public GridReportSourceResolver(string reportsPath)
@@ -29,6 +30,9 @@ namespace BlazorStudioManager
 
         public ReportSource Resolve(string report, OperationOrigin operationOrigin, IDictionary<string, object> currentParameterValues)
         {
+            // can be included in the Resolve() method of the Custom Report Resolver
+            var urlReferrer = UserIdentity.Current.Name;
+
             // Converts the JSON data into a dynamic object and reads the reportName field
             ReportSourceModel reportSourceData = Newtonsoft.Json.JsonConvert.DeserializeObject<ReportSourceModel>(report);
             var reportName = reportSourceData.Name;
@@ -44,7 +48,7 @@ namespace BlazorStudioManager
 
                 // Reads and deserialize the report file
                 var gridReportPath = Path.Combine(this.reportPath, reportName);
-                this.gridReportInstance = (Report)new Telerik.Reporting.XmlSerialization.ReportXmlSerializer().Deserialize(gridReportPath);
+                this.gridReportInstance = (Telerik.Reporting.Report)new Telerik.Reporting.XmlSerialization.ReportXmlSerializer().Deserialize(gridReportPath);
 
                 // Set the JSON datasource
                 if (string.Equals(reportName, DATAGRID_EXAMPLE_REPORT, System.StringComparison.OrdinalIgnoreCase))

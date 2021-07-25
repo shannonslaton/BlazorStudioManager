@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlazorStudioManager.Shared
+namespace BlazorStudioManager.Shared.IdentityModels
 {
     public class ReportTemplate
     {
@@ -20,7 +20,7 @@ namespace BlazorStudioManager.Shared
         public string ReportTemplateName { get; set; }
         public byte[] Layout { get; set; }
         public bool? Locked { get; set; }
-        public string ReportType { get; set; }
+        public string ModelType { get; set; }
         public bool? GlobalLayout { get; set; }
         public int? DisciplineId { get; set; }
         public string LastModifiedBy { get; set; }
