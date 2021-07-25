@@ -125,8 +125,7 @@ namespace BlazorStudioManager.Server
             {
                 Layout = definition,
                 ReportTemplateName = definitionId,
-                LastModifiedOnDt = DateTime.Now,
-                OwnerContactRecId = 1
+                LastModifiedOnDt = DateTime.Now
             };
 
             _contextIdentity.Add(saveTemplate);
