@@ -247,7 +247,7 @@ namespace BlazorStudioManager.Server.Controllers
                 .Where(c => c.ModelType == model)
                 .Where(c => c.Hidden == false)
                 .Where(c => c.Deleted == false)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(c => c.CreatedByUserId == CurrentUser.Id);
 
             if (existing == null)
             {
