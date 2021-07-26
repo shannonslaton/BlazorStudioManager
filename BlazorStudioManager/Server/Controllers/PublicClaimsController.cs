@@ -54,6 +54,14 @@ namespace BlazorStudioManager.Server.Controllers
             if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
                 var user = _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
+
+                //try to find the claim
+                var existingClaim = _userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString());
+
+                //remove the claim if it already exists
+                if (existingClaim != null)
+                    await _userManager.RemoveClaimAsync(user, existingClaim);
+
                 await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.PageName.ToString(), reportType));
             }
 
