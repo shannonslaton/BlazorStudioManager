@@ -9,6 +9,9 @@ using Telerik.WebReportDesigner.Services;
 using BlazorStudioManager.Shared;
 using Telerik.Reporting.Processing;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorStudioManager.Server
 {
@@ -17,6 +20,9 @@ namespace BlazorStudioManager.Server
         public string BaseDir => throw new NotImplementedException();
         private readonly StudioManagerContext _contextUser;
         private readonly StudioManagerIdentityContext _contextIdentity;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        //private readonly UserManager<StudioManagerUser> _userManager;
+        private readonly IServiceProvider _serviceProvider;
 
         private int savedUserChangesCount { get; set; } = 0;
         private int savedIdentityChangesCount { get; set; } = 0;
@@ -32,8 +38,17 @@ namespace BlazorStudioManager.Server
         //private ReportTemplatesController cont { get; set; }
         public string currentUserId { get; set; }
 
-        public DbDefinitionStorage(IConfiguration configuration)
+        public DbDefinitionStorage(
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor,
+            IServiceProvider serviceProvider
+            //UserManager<StudioManagerUser> userManager
+            )
         {
+            _httpContextAccessor = httpContextAccessor;
+            _serviceProvider = serviceProvider;
+            //_userManager = userManager;
+
             var conStringUser = configuration.GetConnectionString("StudioManagerUserConnectionMaster");
             var optionsBuilder = new DbContextOptionsBuilder<StudioManagerContext>();
             optionsBuilder.UseSqlServer(conStringUser);
@@ -59,14 +74,20 @@ namespace BlazorStudioManager.Server
         /// <returns>A list of all report definitions present in the storage.</returns>
         public IEnumerable<string> ListDefinitions()
         {
-            //var pubNew = new PublicClaims();
-            //var pageName = pubNew.GetClaim<string>(PublicClaims.AuthenticatedClaimTypes.PageName);
-            //var userId = pubNew.GetClaim<string>(PublicClaims.AuthenticatedClaimTypes.UserId);
+            var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var pageName = string.Empty;
+            
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
+                var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
+                pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+            }
+
             var returnList = new List<string>();
 
-            //var identity = (ClaimsPrincipal)Thread.CurrentPrincipal;
-            //var UserId = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
-
+            
             var foundList = _contextIdentity.ReportTemplates;
             //var ConnectionString = "Data Source=.\\SQLExpress;Initial Catalog=ShowBuilderBlazorUser0;Trusted_Connection=True;MultipleActiveResultSets=false";
             //SqlConnection connection = new SqlConnection(ConnectionString);

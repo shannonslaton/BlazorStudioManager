@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using BlazorStudioManager.Shared;
 
 namespace BlazorStudioManager.Server.Controllers
 {
@@ -18,6 +20,8 @@ namespace BlazorStudioManager.Server.Controllers
     {
         private readonly StudioManagerContext _contextUser;
         private readonly StudioManagerIdentityContext _contextIdentity;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<StudioManagerUser> _userManager;
 
         private bool saveIdentitySuccess;
         private bool saveUserSuccess;
@@ -27,10 +31,12 @@ namespace BlazorStudioManager.Server.Controllers
         private string GridStoreName { get; set; } = "DeviceAccessories";
         private SharedProduction CurrentSharedProduction { get; set; }
 
-        public PublicClaimsController(StudioManagerContext contextUser, StudioManagerIdentityContext contextIdentity)
+        public PublicClaimsController(StudioManagerContext contextUser, StudioManagerIdentityContext contextIdentity, IHttpContextAccessor httpContextAccessor, UserManager<StudioManagerUser> userManager)
         {
             _contextUser = contextUser;
             _contextIdentity = contextIdentity;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
         }
 
         #region Saves
@@ -45,9 +51,11 @@ namespace BlazorStudioManager.Server.Controllers
         {
             await GetUserAndProduction();
 
-            var addUserId = new PublicClaims();
-            addUserId.UpsertClaim(PublicClaims.AuthenticatedClaimTypes.UserId, CurrentUser.Id);
-            addUserId.UpsertClaim(PublicClaims.AuthenticatedClaimTypes.PageName, reportType);
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                var user = _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
+                await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.PageName.ToString(), reportType));
+            }
 
             return true;
         }

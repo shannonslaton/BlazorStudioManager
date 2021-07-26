@@ -62,7 +62,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-        //var enumsloaded = await service.SetEnums("Catalogs");
+        var enumsloaded = await service.SetEnums("Catalogs");
         GridData = await client.GetFromJsonAsync<List<Catalog>>("api/Catalogs");
         IsLoading = false;
     }

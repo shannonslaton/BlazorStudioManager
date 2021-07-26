@@ -23,6 +23,15 @@ namespace BlazorStudioManager.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Catalog>>> GetCatalogs()
         {
+            
+
+
+            //var pubNew = new PublicClaims();
+            //var pageName = pubNew.GetClaim<string>(PublicClaims.AuthenticatedClaimTypes.PageName);
+            //var userId = pubNew.GetClaim<string>(PublicClaims.AuthenticatedClaimTypes.UserId);
+            //var returnList = new List<string>();
+
+
             return await _context.Catalogs.ToListAsync();
         }
 

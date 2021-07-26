@@ -129,32 +129,9 @@ namespace BlazorStudioManager.Server
 
             services.Configure<TwilioSettingConsts>(Configuration);
             services.Configure<BraintreeConsts>(Configuration);
-
-            services.TryAddSingleton<IReportServiceConfiguration>(sp => new ReportServiceConfiguration
-            {
-                ReportingEngineConfiguration = sp.GetService<IConfiguration>(),
-                HostAppId = "ShowBuilder.Blazor",
-                Storage = new FileStorage(),
-                ReportSourceResolver = new UriReportSourceResolver(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports"))
-            });
-
-            services.TryAddSingleton<IReportDesignerServiceConfiguration>(sp => new ReportDesignerServiceConfiguration
-            {
-                //DefinitionStorage = new FileDefinitionStorage(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports")),
-                DefinitionStorage = new DbDefinitionStorage(Configuration),
-                SettingsStorage = new FileSettingsStorage(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Telerik Reporting")),
-                ResourceStorage = new ResourceStorage(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Resources"))
-            });
-
-            services.AddSingleton<IReportServiceConfiguration>(sp =>
-                new ReportServiceConfiguration
-                {
-                    ReportingEngineConfiguration = ConfigurationHelper.ResolveConfiguration(sp.GetService<IWebHostEnvironment>()),
-                    HostAppId = "ReportingCore3App",
-                    Storage = new FileStorage(),
-                    ReportSourceResolver = new GridReportSourceResolver(System.IO.Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath)),
-                    ReportSharingTimeout = 1400
-                });
+            
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddAuthorization(options =>
             {
@@ -170,7 +147,31 @@ namespace BlazorStudioManager.Server
             });
             services.AddTelerikBlazor();
 
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton<IReportServiceConfiguration>(sp => new ReportServiceConfiguration
+            {
+                ReportingEngineConfiguration = sp.GetService<IConfiguration>(),
+                HostAppId = "ShowBuilder.Blazor",
+                Storage = new FileStorage(),
+                ReportSourceResolver = new UriReportSourceResolver(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports"))
+            });
+
+            services.TryAddSingleton<IReportDesignerServiceConfiguration>(sp => new ReportDesignerServiceConfiguration
+            {
+                //DefinitionStorage = new FileDefinitionStorage(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports")),
+                DefinitionStorage = new DbDefinitionStorage(Configuration, sp.GetService<IHttpContextAccessor>(), sp.GetService<IServiceProvider>()),
+                SettingsStorage = new FileSettingsStorage(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Telerik Reporting")),
+                ResourceStorage = new ResourceStorage(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Resources"))
+            });
+
+            services.AddSingleton<IReportServiceConfiguration>(sp =>
+                new ReportServiceConfiguration
+                {
+                    ReportingEngineConfiguration = ConfigurationHelper.ResolveConfiguration(sp.GetService<IWebHostEnvironment>()),
+                    HostAppId = "ReportingCore3App",
+                    Storage = new FileStorage(),
+                    ReportSourceResolver = new GridReportSourceResolver(System.IO.Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath)),
+                    ReportSharingTimeout = 1400
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
