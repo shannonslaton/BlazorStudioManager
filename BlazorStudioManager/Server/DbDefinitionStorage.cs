@@ -21,33 +21,24 @@ namespace BlazorStudioManager.Server
         private readonly StudioManagerContext _contextUser;
         private readonly StudioManagerIdentityContext _contextIdentity;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        //private readonly UserManager<StudioManagerUser> _userManager;
         private readonly IServiceProvider _serviceProvider;
 
         private int savedUserChangesCount { get; set; } = 0;
         private int savedIdentityChangesCount { get; set; } = 0;
         private StudioManagerUser CurrentUser { get; set; }
-        //private Contact CurrentContact { get; set; }
         private string GridStoreName { get; set; } = "CompanyMembers";
-        //private Production CurrentProduction { get; set; }
-        //private CompanyMember CurrentCompanyMember { get; set; }
         private SharedProduction CurrentSharedProduction { get; set; }
 
-        //public ClaimsPrincipal identity { get; set; }
-        //public string UserId { get; set; }
-        //private ReportTemplatesController cont { get; set; }
         public string currentUserId { get; set; }
 
         public DbDefinitionStorage(
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
             IServiceProvider serviceProvider
-            //UserManager<StudioManagerUser> userManager
             )
         {
             _httpContextAccessor = httpContextAccessor;
             _serviceProvider = serviceProvider;
-            //_userManager = userManager;
 
             var conStringUser = configuration.GetConnectionString("StudioManagerUserConnectionMaster");
             var optionsBuilder = new DbContextOptionsBuilder<StudioManagerContext>();
@@ -62,32 +53,23 @@ namespace BlazorStudioManager.Server
             _contextUser = contextUser;
             _contextIdentity = contextIdentity;
 
-            //cont = new ReportTemplatesController(_contextUser, _contextIdentity);
-            //currentUserId = cont.GetCurrentUser();
-
-
         }
 
-        /// <summary>
-        /// Lists all report definitions.
-        /// </summary>
-        /// <returns>A list of all report definitions present in the storage.</returns>
         public IEnumerable<string> ListDefinitions()
         {
             var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var pageName = string.Empty;
-            
+            var modelType = string.Empty;
+
             using (var scope = _serviceProvider.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
                 var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
-                pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+                modelType = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == "ModelType")?.Value;
 
                 var returnList = new List<string>();
 
-
-                var foundList = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id);
+                var foundList = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).Where(c => c.ModelType == modelType);
 
                 foreach (var item in foundList)
                 {
@@ -101,16 +83,16 @@ namespace BlazorStudioManager.Server
         {
             var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var pageName = string.Empty;
+            var modelType = string.Empty;
 
             using (var scope = _serviceProvider.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
                 var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
-                pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+                modelType = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == "ModelType")?.Value;
 
                 var returnTemplate = new byte[7000];
-                var foundTemplate = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId != user.Id).FirstOrDefault(c => c.ReportTemplateName == definitionId);
+                var foundTemplate = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).FirstOrDefault(c => c.ReportTemplateName == definitionId);
                 if (foundTemplate != null)
                 {
                     return foundTemplate.Layout;
@@ -126,34 +108,48 @@ namespace BlazorStudioManager.Server
         {
             var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var pageName = string.Empty;
+            var modelType = string.Empty;
+            var globalLayoutString = string.Empty;
+            var globalLayout = false;
 
             using (var scope = _serviceProvider.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
                 var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
-                pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+                modelType = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == "ModelType")?.Value;
+                globalLayoutString = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.GlobalLayout.ToString())?.Value;
 
-                var saveTemplate = new ReportTemplate()
+                if (globalLayoutString == "true")
                 {
-                    Layout = definition,
-                    ReportTemplateName = definitionId,
-                    LastModifiedOnDt = DateTime.Now,
-                    LastModifiedById = user.Id,
-                    CreatedByUserId = user.Id,
-                    CreatedOn = DateTime.Now,
-                    ModelType = pageName
-                };
+                    globalLayout = true;
+                }
 
-                _contextIdentity.Add(saveTemplate);
+                var existing = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
+
+                if (existing != null)
+                {
+                    existing.Layout = definition;
+                }
+                else
+                {
+                    var saveTemplate = new ReportTemplate()
+                    {
+                        Layout = definition,
+                        ReportTemplateName = definitionId,
+                        LastModifiedOnDt = DateTime.Now,
+                        LastModifiedById = user.Id,
+                        CreatedByUserId = user.Id,
+                        CreatedOn = DateTime.Now,
+                        ModelType = modelType,
+                        GlobalLayout = globalLayout,
+                        EditIndex = 0
+                    };
+
+                    _contextIdentity.Add(saveTemplate);
+                }
                 _contextIdentity.SaveChanges();
             }
         }
-
-        /// <summary>
-        /// Deletes an existing report definition.
-        /// </summary>
-        /// <param name="definitionId">The report definition identifier.</param>
         public void DeleteDefinition(string definitionId)
         {
             // Delete the report definition from the database.

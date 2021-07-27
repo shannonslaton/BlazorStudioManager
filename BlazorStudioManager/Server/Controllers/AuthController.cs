@@ -318,6 +318,7 @@ namespace BlazorStudioManager.Server.Controllers
         public async Task<CurrentUser> GetCurrentUserInfo(bool GetFull)
         {
             await Task.Delay(1);
+
             var currentUser = new CurrentUser
             {
                 IsAuthenticated = User.Identity.IsAuthenticated,

@@ -8,11 +8,11 @@ namespace BlazorStudioManager.Shared.ReportModels.json
     public class ReportSourceModel
     {
         public string Name { get; set; }
-        public List<ZProduct> Data { get; set; }
+        public List<Catalog> Data { get; set; }
         public string Grouping { get; set; }
         public List<ReportSourceFilter> Filters { get; set; }
         public ReportSourceSorting Sortings { get; set; }
-
+        public string ModelType { get; set; }
 
     }
 }

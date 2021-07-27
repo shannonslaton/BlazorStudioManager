@@ -2,6 +2,9 @@
 {
     public enum CustomClaimTypes
     {
-        PageName = 0
+        ModelType = 0,
+        UserId = 0,
+        GlobalLayout = 0,
+        ReportNameAndData = 0
     }
 }

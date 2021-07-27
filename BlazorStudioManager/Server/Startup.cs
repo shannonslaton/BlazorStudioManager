@@ -169,7 +169,8 @@ namespace BlazorStudioManager.Server
                     ReportingEngineConfiguration = ConfigurationHelper.ResolveConfiguration(sp.GetService<IWebHostEnvironment>()),
                     HostAppId = "ReportingCore3App",
                     Storage = new FileStorage(),
-                    ReportSourceResolver = new GridReportSourceResolver(System.IO.Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath)),
+                    ReportSourceResolver = new MyReportSourceResolver(Configuration, sp.GetService<IHttpContextAccessor>(), sp.GetService<IServiceProvider>()),
+                    //ReportSourceResolver = new GridReportSourceResolver(System.IO.Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath)),
                     ReportSharingTimeout = 1400
                 });
         }

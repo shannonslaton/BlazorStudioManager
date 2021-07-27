@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlazorStudioManager.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -17,9 +18,9 @@ namespace BlazorStudioManager.Client.Services
         }
 
         #region Public Enums
-        public async Task<bool> SetEnums(string reportType)
+        public async Task SetEnums(PassReportDefinition passReportDefinition)
         {
-            return await client.GetFromJsonAsync<bool>($"api/PublicClaims/SetEnums/{reportType}");
+            await client.PostAsJsonAsync("api/PublicClaims/SetEnums", passReportDefinition);
         }
         #endregion
     }

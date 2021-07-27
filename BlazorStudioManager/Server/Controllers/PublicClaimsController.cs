@@ -46,8 +46,8 @@ namespace BlazorStudioManager.Server.Controllers
         }
         #endregion
 
-        [HttpGet("{reportType}")]
-        public async Task<ActionResult<bool>> SetEnums(string reportType)
+        [HttpPost]
+        public async Task<ActionResult<bool>> SetEnums(PassReportDefinition passReportDefinition)
         {
             await GetUserAndProduction();
 
@@ -55,14 +55,25 @@ namespace BlazorStudioManager.Server.Controllers
             {
                 var user = _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
 
-                //try to find the claim
-                var existingClaim = _userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString());
+                var existingClaims = _userManager.GetClaimsAsync(user).Result;
 
-                //remove the claim if it already exists
-                if (existingClaim != null)
-                    await _userManager.RemoveClaimAsync(user, existingClaim);
+                foreach (var item in existingClaims)
+                {
+                    await _userManager.RemoveClaimAsync(user, item);
+                }
 
-                await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.PageName.ToString(), reportType));
+                ////try to find the claim
+                //var existingClaim = _userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.ModelType.ToString());
+
+                ////remove the claim if it already exists
+                //if (existingClaim != null)
+                //    await _userManager.RemoveClaimAsync(user, existingClaim);
+
+                var modelTypeFilter = CustomClaimTypes.ModelType.ToString();
+                await _userManager.AddClaimAsync(user, new Claim("ModelType", passReportDefinition.ModelType));
+
+                var reportNameAndDataFilter = CustomClaimTypes.ReportNameAndData.ToString();
+                await _userManager.AddClaimAsync(user, new Claim("ReportNameAndData", passReportDefinition.NameAndData));
             }
 
             return true;
