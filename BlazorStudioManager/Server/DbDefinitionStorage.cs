@@ -83,75 +83,71 @@ namespace BlazorStudioManager.Server
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
                 var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
                 pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+
+                var returnList = new List<string>();
+
+
+                var foundList = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id);
+
+                foreach (var item in foundList)
+                {
+                    returnList.Add(item.ReportTemplateName);
+                }
+                return returnList;
             }
-
-            var returnList = new List<string>();
-
-            
-            var foundList = _contextIdentity.ReportTemplates;
-            //var ConnectionString = "Data Source=.\\SQLExpress;Initial Catalog=ShowBuilderBlazorUser0;Trusted_Connection=True;MultipleActiveResultSets=false";
-            //SqlConnection connection = new SqlConnection(ConnectionString);
-
-            //var command = new SqlCommand("GetReportTemplates", connection);
-            //command.CommandType = System.Data.CommandType.StoredProcedure;
-            //connection.Open();
-            //SqlDataReader reader = command.ExecuteReader();
-
-            //var templateName = "";
-
-            //while (reader.Read())
-            //{
-            //    templateName = (string)reader["ReportTemplateName"];
-            //    returnList.Add(templateName);
-            //}
-
-            foreach (var item in foundList)
-            {
-                returnList.Add(item.ReportTemplateName);
-            }
-            return returnList;
-            // Retrieve all available reports in the database and return their unique identifiers.
         }
 
-        /// <summary>
-        /// Finds a report definition by its id.
-        /// </summary>
-        /// <param name="definitionId">The report definition identifier.</param>
-        /// <returns>The bytes of the report definition.</returns>
         public byte[] GetDefinition(string definitionId)
         {
-            var returnTemplate = new byte[7000];
-            var foundTemplate = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
-            if (foundTemplate != null)
-            {
-                return foundTemplate.Layout;
-            }
-            else
-            {
-                return returnTemplate;
-            }
+            var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var pageName = string.Empty;
 
-            
-            // Retrieve the report definition bytes from the database.
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
+                var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
+                pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+
+                var returnTemplate = new byte[7000];
+                var foundTemplate = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId != user.Id).FirstOrDefault(c => c.ReportTemplateName == definitionId);
+                if (foundTemplate != null)
+                {
+                    return foundTemplate.Layout;
+                }
+                else
+                {
+                    return returnTemplate;
+                }
+            }
         }
 
-        /// <summary>
-        /// Creates new or overwrites an existing report definition with the provided definition bytes.
-        /// </summary>
-        /// <param name="definitionId">The report definition identifier.</param>
-        /// <param name="definition">The new bytes of the report definition.</param>
         public void SaveDefinition(string definitionId, byte[] definition)
         {
-            var saveTemplate = new ReportTemplate()
-            {
-                Layout = definition,
-                ReportTemplateName = definitionId,
-                LastModifiedOnDt = DateTime.Now
-            };
+            var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var pageName = string.Empty;
 
-            _contextIdentity.Add(saveTemplate);
-            _contextIdentity.SaveChanges();
-            // Save the report definiton bytes to the database.
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
+                var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
+                pageName = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.PageName.ToString())?.Value;
+
+                var saveTemplate = new ReportTemplate()
+                {
+                    Layout = definition,
+                    ReportTemplateName = definitionId,
+                    LastModifiedOnDt = DateTime.Now,
+                    LastModifiedById = user.Id,
+                    CreatedByUserId = user.Id,
+                    CreatedOn = DateTime.Now,
+                    ModelType = pageName
+                };
+
+                _contextIdentity.Add(saveTemplate);
+                _contextIdentity.SaveChanges();
+            }
         }
 
         /// <summary>
