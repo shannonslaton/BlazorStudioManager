@@ -117,7 +117,7 @@ namespace BlazorStudioManager.Server
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
                 var user = userManager.GetUserAsync(_httpContextAccessor.HttpContext.User).Result;
                 modelType = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == "ModelType")?.Value;
-                globalLayoutString = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.GlobalLayout.ToString())?.Value;
+                globalLayoutString = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == "GlobalLayout")?.Value;
 
                 if (globalLayoutString == "true")
                 {
