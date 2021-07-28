@@ -5,6 +5,7 @@
         ModelType = 0,
         UserId = 0,
         GlobalLayout = 0,
-        ReportNameAndData = 0
+        ReportNameAndData = 0,
+        GridState = 0
     }
 }

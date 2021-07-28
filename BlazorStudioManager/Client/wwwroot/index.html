@@ -33,6 +33,14 @@
     <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js" defer></script>
     <link id="TelerikThemeLink" rel="stylesheet" href="/themes/Bootstrap.css" />
 
+    <script type="text/javascript">
+        window.trvEventHandlers = {
+            pageReady: function (e, args) {
+                var loader = document.getElementById("loading");
+                loader.setAttribute("display", "none");
+            }
+        }
+    </script>
 
     <script src="ThemeChanger.js"></script>
     <script type="module" src="js/webcam.js"></script>

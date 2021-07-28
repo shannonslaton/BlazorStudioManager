@@ -36,5 +36,12 @@ namespace BlazorStudioManager.Server.Controllers
 
             return identity;
         }
+
+        //public override IActionResult GetReport(string reportId)
+        //{
+        //    var result = base.GetReport(reportId);
+        //    return result;
+        //}
+
     }
 }

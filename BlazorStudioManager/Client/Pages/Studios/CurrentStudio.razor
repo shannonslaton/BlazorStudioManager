@@ -19,79 +19,158 @@
     }
 </style>
 
-@if (ShowGridData)
+@if (ShowReport)
 {
-    <GridReport></GridReport>
+    <TelerikButton OnClick="ToggleShow">Hide Report Designer</TelerikButton>
+    <TelerikComboBox Data="@ReportDdoData" @bind-Value="ReportTemplateName" ClearButton="false"
+                     OnChange="LoadReport" Filterable="true" PopupWidth="auto">
+    </TelerikComboBox>
+    <TelerikTabStrip @bind-ActiveTabIndex="@ActiveTabIndex">
+
+        <TabStripTab Title="Designer">
+            <WebReportDesigner DesignerId="wrd1"
+                               @ref="@reportDesigner"
+                               ServiceUrl="/api/reportdesigner"
+                               ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
+                               PropertiesArea="new PropertiesAreaOptions() { Layout = PropertiesAreaLayout.Categorized }" />
+        </TabStripTab>
+        <TabStripTab Title="Preview">
+            <ReportViewer ViewerId="rv1"
+                          @ref="@reportViewer"
+                          ServiceUrl="/api/reportdesigner"
+                          ReportSource="@(new ReportSourceOptions()
+                          {
+                            Report = @ReportSourceJson
+                          })"
+                          TemplateUrl="/telerikReportViewerTemplate.html"
+                          ScaleMode="@(ScaleMode.Specific)"
+                          Scale="1.0" />
+        </TabStripTab>
+    </TelerikTabStrip>
 }
 else
 {
-    @if (ShowReport)
+    if (IsLoading)
     {
-        <TelerikButton OnClick="ToggleShow">Hide Report Designer</TelerikButton>
-        <WebReportDesigner DesignerId="wrd1"
-                           @ref="@reportDesigner"
-                           ServiceUrl="/api/reportdesigner"
-                           ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
-                           PropertiesArea="new PropertiesAreaOptions() { Layout = PropertiesAreaLayout.Categorized }" />
+        <h4>Loading...</h4>
     }
     else
     {
-        if (IsLoading)
-        {
-            <h4>Loading...</h4>
-        }
-        else
-        {
-            <TelerikButton OnClick="ToggleShow">Show Report Designer</TelerikButton>
+        <TelerikButton OnClick="ToggleShow">Show Report Designer</TelerikButton>
 
-            <TelerikGrid Data="@GridData">
-                <GridColumns>
-                    <GridColumn Field="RecId" Title="Id" Width="150px" />
-                    <GridColumn Field="CatalogName" Title="Name" Width="150px" />
-                </GridColumns>
-            </TelerikGrid>
-        }
+        <TelerikGrid Data="@GridData" @ref="Grid" OnStateChanged="@((GridStateEventArgs<Catalog> args) => OnStateChangedHandler(args))" 
+             Navigable="true" SortMode="@SortMode.Multiple" ShowColumnMenu="true" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterMenu" FilterMenuType="FilterMenuType.CheckBoxList"
+             Resizable="true" Reorderable="true"
+             OnStateInit="@((GridStateEventArgs<Catalog> args) => OnStateInit(args))">
+            <GridColumns>
+                <GridColumn Field="RecId" Title="Id" Width="150px" />
+                <GridColumn Field="CatalogName" Title="Name" Width="150px" />
+            </GridColumns>
+        </TelerikGrid>
     }
 }
 
 @code{
     public bool IsLoading { get; set; }
-    public bool ShowGridData { get; set; }
     public bool ShowReport { get; set; }
-    public bool ShowReportPreview { get; set; }
     public ReportViewer reportViewer;
     public WebReportDesigner reportDesigner;
+    public TelerikGrid<Catalog> Grid;
     public List<Catalog> GridData { get; set; }
+    public GridState<Catalog> savedGridState { get; set; }
     public string ReportSourceJson { get; set; }
     public string ReportTemplateName { get; set; } = "Report1.trdp";
     public PassReportDefinition passReportDefinition { get; set; } = new PassReportDefinition();
+    public List<string> ReportDdoData { get; set; }
+    public int ActiveTabIndex { get; set; } = 0;
+    public string GridSaveName { get; set; } = "ReportCatalog";
 
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-        GridData = await client.GetFromJsonAsync<List<Catalog>>("api/Catalogs");
+        GridData = await client.GetFromJsonAsync<List<Catalog>>("api/Catalogs/GetCatalogs");
 
-        var reportSourceObject = new ReportSourceModel();
-        reportSourceObject.Name = "ReplaceName";
+        ReportDdoData = await service.GetReportTemplatesDdo();
+
+        if (ReportDdoData.Count() > 0)
+        {
+            ReportTemplateName = ReportDdoData.FirstOrDefault();
+        }
+
+        var reportSourceObject = new ReportSourceCatalog();
+        reportSourceObject.Name = ReportTemplateName;
         reportSourceObject.Data = GridData;
         ReportSourceJson = Newtonsoft.Json.JsonConvert.SerializeObject(reportSourceObject);
         passReportDefinition.ModelType = "Catalogs";
-        passReportDefinition.NameAndData = ReportSourceJson;
         await service.SetEnums(passReportDefinition);
 
         IsLoading = false;
     }
 
-    void ToggleShow()
+    async Task ToggleShow()
     {
         ShowReport = !ShowReport;
+
+        if (ShowReport)
+        {
+            GridSaveName = "ReportCatalog";
+            await SaveState();
+        }
     }
-    void ToggleShowReportDesigner()
+
+    async Task LoadReport()
     {
-        ShowReportPreview = !ShowReportPreview;
+        ShowReport = false;
+        await Task.Delay(1);
+
+        var reportSourceObject = new ReportSourceCatalog();
+        reportSourceObject.Name = ReportTemplateName;
+        reportSourceObject.Data = GridData;
+        ReportSourceJson = Newtonsoft.Json.JsonConvert.SerializeObject(reportSourceObject);
+        passReportDefinition.ModelType = "Catalogs";
+        await service.SetEnums(passReportDefinition);
+        ShowReport = true;
+        ActiveTabIndex = 1;
     }
-    void ToggleGridData()
+    public async Task SaveState()
     {
-        ShowGridData = !ShowGridData;
+        var gridState = Grid.GetState();
+
+        var message = await service.PostGridSaveCatalogs(gridState, GridSaveName);
+    }
+    public void OnStateInit(GridStateEventArgs<Catalog> args)
+    {
+        try
+        {
+            GridSaveName = "Catalogs";
+            savedGridState = new GridState<Catalog>();
+        }
+        catch (InvalidOperationException)
+        {
+            // the JS Interop for the local storage cannot be used during pre-rendering
+        }
+    }
+
+    public async void OnStateChangedHandler(GridStateEventArgs<Catalog> args)
+    {
+        // Because applying multiple groups would make the Report-Definition more complex, only 1 grouping
+        // is allowed for the grid. If another one is applied, the first one is removed/overwritten.
+        if (args.PropertyName == "GroupDescriptors")
+        {
+            if (args.GridState.GroupDescriptors.Count > 1)
+            {
+                var groups = args.GridState.GroupDescriptors;
+                groups.Remove(groups.First());
+                await Grid.SetState(args.GridState);
+            }
+        }
+
+        // Allowes the grid to be restored when switching tabs from Report back to Grid
+        this.savedGridState = args.GridState;
+
+        if (args.GridState != null)
+        {
+            //SetReportSourceJson(args.GridState);
+        };
     }
 }

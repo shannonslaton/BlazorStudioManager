@@ -62,18 +62,8 @@ namespace BlazorStudioManager.Server.Controllers
                     await _userManager.RemoveClaimAsync(user, item);
                 }
 
-                ////try to find the claim
-                //var existingClaim = _userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == CustomClaimTypes.ModelType.ToString());
-
-                ////remove the claim if it already exists
-                //if (existingClaim != null)
-                //    await _userManager.RemoveClaimAsync(user, existingClaim);
-
                 var modelTypeFilter = CustomClaimTypes.ModelType.ToString();
                 await _userManager.AddClaimAsync(user, new Claim("ModelType", passReportDefinition.ModelType));
-
-                var reportNameAndDataFilter = CustomClaimTypes.ReportNameAndData.ToString();
-                await _userManager.AddClaimAsync(user, new Claim("ReportNameAndData", passReportDefinition.NameAndData));
             }
 
             return true;

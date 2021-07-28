@@ -203,26 +203,26 @@ namespace BlazorStudioManager.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DropDownOption>>> GetReportTemplatesDdo()
+        public async Task<ActionResult<IEnumerable<string>>> GetReportTemplatesDdo()
         {
             await GetUserAndProduction();
 
-            var collection = await _contextIdentity.ReportTemplates.Where(c => c.Deleted == false).Where(c => c.Hidden == false).ToListAsync();
+            var collection = await _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == CurrentUser.Id).Where(c => c.Deleted == false).Where(c => c.Hidden == false).ToListAsync();
 
-            List<DropDownOption> finalList = new List<DropDownOption>();
+            List<string> finalList = new List<string>();
 
             foreach (var item in collection)
             {
-                var ddo = new DropDownOption()
-                {
-                    RecId = item.RecId,
-                    DdoTitle = item.ReportTemplateName
-                };
+                //var ddo = new DropDownOption()
+                //{
+                //    RecId = item.RecId,
+                //    DdoTitle = item.ReportTemplateName
+                //};
 
-                finalList.Add(ddo);
+                finalList.Add(item.ReportTemplateName);
             }
 
-            return finalList.OrderBy(c => c.DdoTitle).ToList();
+            return finalList.OrderBy(c => c).ToList();
         }
 
         [HttpGet("{id}")]
