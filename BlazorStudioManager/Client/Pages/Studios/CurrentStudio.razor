@@ -162,6 +162,12 @@ else
     async Task LoadReport()
     {
         ShowReport = false;
+        var reportSourceObject = new ReportSourceCatalog();
+        reportSourceObject.Name = ReportTemplateName;
+        reportSourceObject.Data = GridData;
+        ReportSourceJson = Newtonsoft.Json.JsonConvert.SerializeObject(reportSourceObject);
+        passReportDefinition.ModelType = "Catalogs";
+        await service.SetEnums(passReportDefinition);
         await Task.Delay(1);
         ShowReport = true;
     }
