@@ -17,6 +17,8 @@
         height: 880px;
         padding-right: 50px;
     }
+
+li[data-action="open"], li[data-action="documentSaveAs"], li[data-action="close"] { display: none !important; }
 </style>
 
 @if (ShowReport)
@@ -25,11 +27,13 @@
     <TelerikComboBox Data="@ReportDdoData" @bind-Value="ReportTemplateName" ClearButton="false"
                      OnChange="LoadReport" Filterable="true" PopupWidth="auto">
     </TelerikComboBox>
+    <TelerikButton OnClick="SaveAsTemplate">Save As</TelerikButton>
     <TelerikTabStrip @bind-ActiveTabIndex="@ActiveTabIndex">
 
         <TabStripTab Title="Designer">
             <WebReportDesigner DesignerId="wrd1"
                                @ref="@reportDesigner"
+                               Report="@ReportTemplateName"
                                ServiceUrl="/api/reportdesigner"
                                ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
                                PropertiesArea="new PropertiesAreaOptions() { Layout = PropertiesAreaLayout.Categorized }" />
@@ -58,10 +62,10 @@ else
     {
         <TelerikButton OnClick="ToggleShow">Show Report Designer</TelerikButton>
 
-        <TelerikGrid Data="@GridData" @ref="Grid" OnStateChanged="@((GridStateEventArgs<Catalog> args) => OnStateChangedHandler(args))" 
-             Navigable="true" SortMode="@SortMode.Multiple" ShowColumnMenu="true" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterMenu" FilterMenuType="FilterMenuType.CheckBoxList"
-             Resizable="true" Reorderable="true"
-             OnStateInit="@((GridStateEventArgs<Catalog> args) => OnStateInit(args))">
+        <TelerikGrid Data="@GridData" @ref="Grid" OnStateChanged="@((GridStateEventArgs<Catalog> args) => OnStateChangedHandler(args))"
+                     Navigable="true" SortMode="@SortMode.Multiple" ShowColumnMenu="true" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterMenu" FilterMenuType="FilterMenuType.CheckBoxList"
+                     Resizable="true" Reorderable="true"
+                     OnStateInit="@((GridStateEventArgs<Catalog> args) => OnStateInit(args))">
             <GridColumns>
                 <GridColumn Field="RecId" Title="Id" Width="150px" />
                 <GridColumn Field="CatalogName" Title="Name" Width="150px" />
@@ -71,6 +75,8 @@ else
 }
 
 @code{
+    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+
     public bool IsLoading { get; set; }
     public bool ShowReport { get; set; }
     public ReportViewer reportViewer;
@@ -115,22 +121,52 @@ else
         {
             GridSaveName = "ReportCatalog";
             await SaveState();
+            await PreviewReport();
         }
     }
+    async Task SaveAsTemplate()
+    {
+        ShowReport = false;
+        string templateName = await Dialogs.PromptAsync("Save As Name");
+        var modelType = "Catalogs";
 
+        if (templateName != null)
+        {
+            var testName = templateName + ".trdp";
+            var exists = await client.GetFromJsonAsync<bool>($"api/ReportTemplates/DoesNameExist/{testName}/{modelType}");
+
+            if (!exists)
+            {
+                ReportDdoData = new List<string>();
+                var response = await client.GetFromJsonAsync<ReportTemplate>($"api/ReportTemplates/SaveAsReportTemplate/{modelType}/{ReportTemplateName}/{templateName}");
+                ReportDdoData = await service.GetReportTemplatesDdo();
+                await Task.Delay(10);
+                ReportTemplateName = response.ReportTemplateName;
+            }
+            else
+            {
+                await Dialogs.AlertAsync("Report Name already exists.");
+            }
+
+        }
+
+        await Task.Delay(1);
+        ShowReport = true;
+    }
     async Task LoadReport()
     {
         ShowReport = false;
         await Task.Delay(1);
-
+        ShowReport = true;
+    }
+    async Task PreviewReport()
+    {
         var reportSourceObject = new ReportSourceCatalog();
         reportSourceObject.Name = ReportTemplateName;
         reportSourceObject.Data = GridData;
         ReportSourceJson = Newtonsoft.Json.JsonConvert.SerializeObject(reportSourceObject);
         passReportDefinition.ModelType = "Catalogs";
         await service.SetEnums(passReportDefinition);
-        ShowReport = true;
-        ActiveTabIndex = 1;
     }
     public async Task SaveState()
     {

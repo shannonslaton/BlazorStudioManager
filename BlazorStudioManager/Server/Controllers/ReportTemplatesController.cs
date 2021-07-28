@@ -209,6 +209,28 @@ namespace BlazorStudioManager.Server.Controllers
 
             var collection = await _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == CurrentUser.Id).Where(c => c.Deleted == false).Where(c => c.Hidden == false).ToListAsync();
 
+            //if (collection.Count() == 0)
+            //{
+            //    var returnTemplate = new byte[7000];
+            //    var addTemplate = new ReportTemplate()
+            //    {
+            //        Layout = returnTemplate,
+            //        ReportTemplateName = "Blank.trdp",
+            //        LastModifiedOnDt = DateTime.Now,
+            //        GlobalLayout = false,
+            //        ModelType = "Catalogs",
+            //        CreatedOn = DateTime.UtcNow,
+            //        CreatedByUserId = CurrentUser.Id,
+            //        EditIndex = 0,
+            //        LastModifiedById = CurrentUser.Id
+            //    };
+
+            //    await _contextIdentity.AddAsync(addTemplate);
+            //    await _contextIdentity.SaveChangesAsync();
+
+            //    collection.Add(addTemplate);
+            //}
+
             List<string> finalList = new List<string>();
 
             foreach (var item in collection)
@@ -257,6 +279,23 @@ namespace BlazorStudioManager.Server.Controllers
             {
                 return true;
             }
+        }
+
+        [HttpGet("{modelType}/{ReportTemplateName}/{templateName}")]
+        public async Task<ActionResult<ReportTemplate>> SaveAsReportTemplate(string modelType, string ReportTemplateName, string templateName)
+        {
+            await GetUserAndProduction();
+
+            templateName = templateName + ".trdp";
+
+            var ReportTemplate = await _contextIdentity.ReportTemplates.Where(c => c.ModelType == modelType).Where(c => c.ReportTemplateName == ReportTemplateName).FirstOrDefaultAsync(c => c.CreatedByUserId == CurrentUser.Id);
+
+            ReportTemplate.RecId = 0;
+            ReportTemplate.ReportTemplateName = templateName;
+            await _contextIdentity.AddAsync(ReportTemplate);
+            await _contextIdentity.SaveChangesAsync();
+
+            return ReportTemplate;
         }
         #endregion
 
