@@ -34,7 +34,7 @@ namespace BlazorStudioManager
             var urlReferrer = UserIdentity.Current.Name;
 
             // Converts the JSON data into a dynamic object and reads the reportName field
-            ReportSourceModel reportSourceData = Newtonsoft.Json.JsonConvert.DeserializeObject<ReportSourceModel>(report);
+            ReportSourceCatalog reportSourceData = Newtonsoft.Json.JsonConvert.DeserializeObject<ReportSourceCatalog>(report);
             var reportName = reportSourceData.Name;
             try
             {

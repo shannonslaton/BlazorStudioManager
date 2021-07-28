@@ -69,7 +69,7 @@ namespace BlazorStudioManager.Server
 
                 var returnList = new List<string>();
 
-                var foundList = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).Where(c => c.ModelType == modelType);
+                var foundList = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).Where(c => c.Deleted == false).Where(c => c.Hidden == false).Where(c => c.ModelType == modelType);
 
                 foreach (var item in foundList)
                 {
@@ -92,7 +92,7 @@ namespace BlazorStudioManager.Server
                 modelType = userManager.GetClaimsAsync(user).Result?.FirstOrDefault(x => x.Type == "ModelType")?.Value;
 
                 var returnTemplate = new byte[7000];
-                var foundTemplate = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).FirstOrDefault(c => c.ReportTemplateName == definitionId);
+                var foundTemplate = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).Where(c => c.ModelType == modelType).Where(c => c.Deleted == false).Where(c => c.Hidden == false).FirstOrDefault(c => c.ReportTemplateName == definitionId);
                 if (foundTemplate != null)
                 {
                     return foundTemplate.Layout;
@@ -124,7 +124,7 @@ namespace BlazorStudioManager.Server
                     globalLayout = true;
                 }
 
-                var existing = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
+                var existing = _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == user.Id).Where(c => c.ModelType == modelType).Where(c => c.Deleted == false).Where(c => c.Hidden == false).FirstOrDefault(c => c.ReportTemplateName == definitionId);
 
                 if (existing != null)
                 {

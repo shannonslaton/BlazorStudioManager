@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BlazorStudioManager.Shared.ReportModels.json
 {
-    public class ReportSourceModel
+    public class ReportSourceCatalog
     {
         public string Name { get; set; }
         public List<Catalog> Data { get; set; }

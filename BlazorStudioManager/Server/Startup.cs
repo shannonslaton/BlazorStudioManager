@@ -147,13 +147,13 @@ namespace BlazorStudioManager.Server
             });
             services.AddTelerikBlazor();
 
-            services.TryAddSingleton<IReportServiceConfiguration>(sp => new ReportServiceConfiguration
-            {
-                ReportingEngineConfiguration = sp.GetService<IConfiguration>(),
-                HostAppId = "ShowBuilder.Blazor",
-                Storage = new FileStorage(),
-                ReportSourceResolver = new UriReportSourceResolver(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports"))
-            });
+            //services.TryAddSingleton<IReportServiceConfiguration>(sp => new ReportServiceConfiguration
+            //{
+            //    ReportingEngineConfiguration = sp.GetService<IConfiguration>(),
+            //    HostAppId = "ShowBuilder.Blazor",
+            //    Storage = new FileStorage(),
+            //    ReportSourceResolver = new UriReportSourceResolver(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports"))
+            //});
 
             services.TryAddSingleton<IReportDesignerServiceConfiguration>(sp => new ReportDesignerServiceConfiguration
             {
@@ -167,7 +167,7 @@ namespace BlazorStudioManager.Server
                 new ReportServiceConfiguration
                 {
                     ReportingEngineConfiguration = ConfigurationHelper.ResolveConfiguration(sp.GetService<IWebHostEnvironment>()),
-                    HostAppId = "ReportingCore3App",
+                    HostAppId = "BlazorStudioManager",
                     Storage = new FileStorage(),
                     ReportSourceResolver = new MyReportSourceResolver(Configuration, sp.GetService<IHttpContextAccessor>(), sp.GetService<IServiceProvider>()),
                     //ReportSourceResolver = new GridReportSourceResolver(System.IO.Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath)),

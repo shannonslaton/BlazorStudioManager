@@ -9,6 +9,6 @@ namespace BlazorStudioManager.Shared
     public class PassReportDefinition
     {
         public string ModelType { get; set; }
-        public string NameAndData { get; set; }
+        public string GridState { get; set; }
     }
 }

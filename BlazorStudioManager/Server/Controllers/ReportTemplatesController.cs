@@ -203,26 +203,48 @@ namespace BlazorStudioManager.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DropDownOption>>> GetReportTemplatesDdo()
+        public async Task<ActionResult<IEnumerable<string>>> GetReportTemplatesDdo()
         {
             await GetUserAndProduction();
 
-            var collection = await _contextIdentity.ReportTemplates.Where(c => c.Deleted == false).Where(c => c.Hidden == false).ToListAsync();
+            var collection = await _contextIdentity.ReportTemplates.Where(c => c.CreatedByUserId == CurrentUser.Id).Where(c => c.Deleted == false).Where(c => c.Hidden == false).ToListAsync();
 
-            List<DropDownOption> finalList = new List<DropDownOption>();
+            //if (collection.Count() == 0)
+            //{
+            //    var returnTemplate = new byte[7000];
+            //    var addTemplate = new ReportTemplate()
+            //    {
+            //        Layout = returnTemplate,
+            //        ReportTemplateName = "Blank.trdp",
+            //        LastModifiedOnDt = DateTime.Now,
+            //        GlobalLayout = false,
+            //        ModelType = "Catalogs",
+            //        CreatedOn = DateTime.UtcNow,
+            //        CreatedByUserId = CurrentUser.Id,
+            //        EditIndex = 0,
+            //        LastModifiedById = CurrentUser.Id
+            //    };
+
+            //    await _contextIdentity.AddAsync(addTemplate);
+            //    await _contextIdentity.SaveChangesAsync();
+
+            //    collection.Add(addTemplate);
+            //}
+
+            List<string> finalList = new List<string>();
 
             foreach (var item in collection)
             {
-                var ddo = new DropDownOption()
-                {
-                    RecId = item.RecId,
-                    DdoTitle = item.ReportTemplateName
-                };
+                //var ddo = new DropDownOption()
+                //{
+                //    RecId = item.RecId,
+                //    DdoTitle = item.ReportTemplateName
+                //};
 
-                finalList.Add(ddo);
+                finalList.Add(item.ReportTemplateName);
             }
 
-            return finalList.OrderBy(c => c.DdoTitle).ToList();
+            return finalList.OrderBy(c => c).ToList();
         }
 
         [HttpGet("{id}")]
@@ -257,6 +279,23 @@ namespace BlazorStudioManager.Server.Controllers
             {
                 return true;
             }
+        }
+
+        [HttpGet("{modelType}/{ReportTemplateName}/{templateName}")]
+        public async Task<ActionResult<ReportTemplate>> SaveAsReportTemplate(string modelType, string ReportTemplateName, string templateName)
+        {
+            await GetUserAndProduction();
+
+            templateName = templateName + ".trdp";
+
+            var ReportTemplate = await _contextIdentity.ReportTemplates.Where(c => c.ModelType == modelType).Where(c => c.ReportTemplateName == ReportTemplateName).FirstOrDefaultAsync(c => c.CreatedByUserId == CurrentUser.Id);
+
+            ReportTemplate.RecId = 0;
+            ReportTemplate.ReportTemplateName = templateName;
+            await _contextIdentity.AddAsync(ReportTemplate);
+            await _contextIdentity.SaveChangesAsync();
+
+            return ReportTemplate;
         }
         #endregion
 
