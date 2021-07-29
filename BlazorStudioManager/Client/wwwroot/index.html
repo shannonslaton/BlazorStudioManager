@@ -21,26 +21,9 @@
     <script src="/api/reportdesigner/resources/js/telerikReportViewer"></script>
     <script src="/api/reportdesigner/designerresources/js/webReportDesigner-15.1.21.716.min.js/"></script>
 
-    <!--<script type="text/javascript">
-        window.trvEventHandlers = {
-            pageReady: function (e, args) {
-                var loader = document.getElementById("loading");
-                loader.setAttribute("display", "none");
-            }
-        }
-    </script>-->
-
-    <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js" defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/@progress/kendo-theme-default@latest/dist/all.css" />
     <link id="TelerikThemeLink" rel="stylesheet" href="/themes/Bootstrap.css" />
-
-    <script type="text/javascript">
-        window.trvEventHandlers = {
-            pageReady: function (e, args) {
-                var loader = document.getElementById("loading");
-                loader.setAttribute("display", "none");
-            }
-        }
-    </script>
+    <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js" defer></script>
 
     <script src="ThemeChanger.js"></script>
     <script type="module" src="js/webcam.js"></script>
@@ -49,16 +32,6 @@
 </head>
 
 <body>
-    <!--<div id="app">Loading...</div>
-
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-    <script src="_framework/blazor.webassembly.js"></script>-->
-
     <div id="app">
         <div style="position:absolute; top:30vh; width:100%; text-align:center">
             <h1>Studio Manager</h1>
@@ -82,9 +55,8 @@
     <script src="js/webcam.js"></script>
     <script src="js/culture-chooser.js"></script>
 
-    <script src="_content/telerik.webreportdesigner.blazor/telerikWebReportDesignerInterop.js" defer></script>
-
     <script src="_content/Telerik.ReportViewer.Blazor/interop.js" defer></script>
+    <script src="_content/telerik.webreportdesigner.blazor/telerikWebReportDesignerInterop.js" defer></script>
 </body>
 
 </html>

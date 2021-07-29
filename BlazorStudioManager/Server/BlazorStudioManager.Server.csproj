@@ -32,8 +32,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.17" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="Telerik.Reporting" Version="15.1.21.716-hotfix" />
-    <PackageReference Include="Telerik.Reporting.WebServiceDataSource" Version="15.1.21.716-hotfix" />
     <PackageReference Include="Telerik.WebReportDesigner.Services" Version="15.1.21.716-hotfix" />
     <PackageReference Include="Twilio" Version="5.64.0" />
     <PackageReference Include="Twilio.AspNet.Core" Version="5.37.2" />

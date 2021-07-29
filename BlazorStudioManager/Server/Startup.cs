@@ -83,9 +83,10 @@ namespace BlazorStudioManager.Server
             });
 
             services.AddControllers().AddNewtonsoftJson();
-            //services.AddControllersWithViews().AddNewtonsoftJson();
+            services.AddControllersWithViews();
             services.AddSignalR();
-            services.AddRazorPages();
+            services.AddRazorPages()
+                .AddNewtonsoftJson();
             services.AddServerSideBlazor();
 
             services.AddResponseCompression(opts =>
@@ -147,32 +148,23 @@ namespace BlazorStudioManager.Server
             });
             services.AddTelerikBlazor();
 
-            //services.TryAddSingleton<IReportServiceConfiguration>(sp => new ReportServiceConfiguration
-            //{
-            //    ReportingEngineConfiguration = sp.GetService<IConfiguration>(),
-            //    HostAppId = "ShowBuilder.Blazor",
-            //    Storage = new FileStorage(),
-            //    ReportSourceResolver = new UriReportSourceResolver(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports"))
-            //});
+            services.AddSingleton<IReportServiceConfiguration>(sp =>
+                new ReportServiceConfiguration
+                {
+                    ReportingEngineConfiguration = sp.GetService<IConfiguration>(),
+                    HostAppId = "BlazorStudioManager",
+                    Storage = new FileStorage(),
+                    ReportSourceResolver = new MyReportSourceResolver(Configuration, sp.GetService<IHttpContextAccessor>(), sp.GetService<IServiceProvider>()),
+                });
 
             services.TryAddSingleton<IReportDesignerServiceConfiguration>(sp => new ReportDesignerServiceConfiguration
             {
-                //DefinitionStorage = new FileDefinitionStorage(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Reports")),
                 DefinitionStorage = new DbDefinitionStorage(Configuration, sp.GetService<IHttpContextAccessor>(), sp.GetService<IServiceProvider>()),
                 SettingsStorage = new FileSettingsStorage(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Telerik Reporting")),
                 ResourceStorage = new ResourceStorage(Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath, "Resources"))
             });
 
-            services.AddSingleton<IReportServiceConfiguration>(sp =>
-                new ReportServiceConfiguration
-                {
-                    ReportingEngineConfiguration = ConfigurationHelper.ResolveConfiguration(sp.GetService<IWebHostEnvironment>()),
-                    HostAppId = "BlazorStudioManager",
-                    Storage = new FileStorage(),
-                    ReportSourceResolver = new MyReportSourceResolver(Configuration, sp.GetService<IHttpContextAccessor>(), sp.GetService<IServiceProvider>()),
-                    //ReportSourceResolver = new GridReportSourceResolver(System.IO.Path.Combine(sp.GetService<IWebHostEnvironment>().ContentRootPath)),
-                    ReportSharingTimeout = 1400
-                });
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -235,16 +227,6 @@ namespace BlazorStudioManager.Server
             {
                 return builder.AddQueueServiceClient(serviceUriOrConnectionString);
             }
-        }
-    }
-    static class ConfigurationHelper
-    {
-        public static IConfiguration ResolveConfiguration(IWebHostEnvironment environment)
-        {
-            var reportingConfigFileName = System.IO.Path.Combine(environment.ContentRootPath, "appsettings.json");
-            return new ConfigurationBuilder()
-                .AddJsonFile(reportingConfigFileName, true)
-                .Build();
         }
     }
 }

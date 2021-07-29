@@ -26,8 +26,8 @@ namespace BlazorStudioManager.Server
 {
     public class MyReportSourceResolver : IReportSourceResolver
     {
-        private readonly StudioManagerIdentityContext _contextIdentity;
-        private readonly StudioManagerContext _context;
+        //private readonly StudioManagerIdentityContext _contextIdentity;
+        //private readonly StudioManagerContext _context;
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceProvider _serviceProvider;
 
@@ -38,7 +38,8 @@ namespace BlazorStudioManager.Server
         public Report reportInstance { get; set; }
         public ReportTemplate foundTemplate { get; set; }
         public InstanceReportSource iRs { get; set; }
-
+        private readonly DbContextOptions<StudioManagerIdentityContext> StudioManagerIdentityOptions;
+        private readonly DbContextOptions<StudioManagerContext> StudioManagerOptions;
         public ReportSourceCatalog reportSourceCatalog { get; set; } = new ReportSourceCatalog();
 
         public MyReportSourceResolver(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
@@ -49,59 +50,21 @@ namespace BlazorStudioManager.Server
             var conStringUser = configuration.GetConnectionString("StudioManagerIdentityConnectionLocal");
             var optionsBuilderUser = new DbContextOptionsBuilder<StudioManagerIdentityContext>();
             optionsBuilderUser.UseSqlServer(conStringUser);
-            var contextIdentity = new StudioManagerIdentityContext(optionsBuilderUser.Options);
+            this.StudioManagerIdentityOptions = optionsBuilderUser.Options;
+            //var contextIdentity = new StudioManagerIdentityContext(optionsBuilderUser.Options);
 
             var conString = configuration.GetConnectionString("StudioManagerUserConnectionMaster");
             var optionsBuilder = new DbContextOptionsBuilder<StudioManagerContext>();
             optionsBuilder.UseSqlServer(conString);
-            var context = new StudioManagerContext(optionsBuilder.Options);
+            this.StudioManagerOptions = optionsBuilder.Options;
+            //var context = new StudioManagerContext(optionsBuilder.Options);
 
-            _contextIdentity = contextIdentity;
-            _context = context;
+            //_contextIdentity = contextIdentity;
+            //_context = context;
         }
-
-        //public ReportSource Resolve(string definitionId, OperationOrigin operationOrigin, IDictionary<string, object> currentParameterValues)
-        //{
-        //    // Retrieve the report definition bytes from the database.
-        //    var foundTemplate = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
-        //    if (foundTemplate == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    Report reportInstance = null;
-        //    if (definitionId.EndsWith(".trdx"))
-        //    {
-        //        XmlReaderSettings settings = new XmlReaderSettings();
-        //        settings.IgnoreWhitespace = true;
-        //        using (XmlReader xmlReader = XmlReader.Create(new MemoryStream(foundTemplate.Layout), settings))
-        //        {
-        //            ReportXmlSerializer xmlSerializer = new ReportXmlSerializer();
-
-        //            reportInstance = (Report)xmlSerializer.Deserialize(xmlReader);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var reportPackager = new ReportPackager();
-        //        using (var sourceStream = new MemoryStream(foundTemplate.Layout))
-        //        {
-        //            reportInstance = (Report)reportPackager.UnpackageDocument(sourceStream);
-        //        }
-        //    }
-
-        //    var iRs = new InstanceReportSource
-        //    {
-        //        ReportDocument = reportInstance
-        //    };
-
-        //    return iRs;
-        //}
-
-
-
         public ReportSource Resolve(string reportName, OperationOrigin operationOrigin, IDictionary<string, object> currentParameterValues)
         {
+            var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
             if (reportName.Contains("{"))
             {
                 // Converts the JSON data into a dynamic object and reads the reportName field
@@ -158,7 +121,7 @@ namespace BlazorStudioManager.Server
                 userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
                 var currentUserEmail = Telerik.Reporting.Processing.UserIdentity.Current.Name;
-                var ttt = _contextIdentity.ReportTemplates;
+
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
@@ -193,6 +156,9 @@ namespace BlazorStudioManager.Server
 
         private InstanceReportSource FillCatalogs(string reportName)
         {
+            var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
+            var _context = new StudioManagerContext(this.StudioManagerOptions);
+
             var GridData = _context.Catalogs.ToList();
 
             var gridSave = _contextIdentity.GridSaves.Where(c => c.StoreName == "ReportCatalog").Where(c => c.AspUserId == userId).FirstOrDefault();

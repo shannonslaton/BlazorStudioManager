@@ -18,45 +18,19 @@
         padding-right: 50px;
     }
 
-    #rv1 {
-        position: relative;
-        width: 100%;
-        height: 600px;
-    }
-
-        li[data-action="close"] { display: none !important; }
+    /*
+    li[data-action="close"] {
+        display: none !important;
+    }*/
 </style>
 
 @if (ShowReport)
 {
     <TelerikButton OnClick="ToggleShow" Title="Return to Grid" Icon="snap-grid"></TelerikButton>
-    @*<TelerikComboBox Data="@ReportDdoData" @bind-Value="ReportTemplateName" ClearButton="false"
-                     OnChange="LoadReport" Filterable="true" PopupWidth="auto">
-    </TelerikComboBox>
-    <TelerikButton OnClick="SaveAsTemplate">Save As</TelerikButton>*@
-    <TelerikTabStrip @bind-ActiveTabIndex="@ActiveTabIndex">
-
-        <TabStripTab Title="Designer">
-            <WebReportDesigner DesignerId="wrd1"
-                               @ref="@reportDesigner"
-                               Report="@ReportTemplateName"
-                               ServiceUrl="/api/reportdesigner"
-                               ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
-                               PropertiesArea="new PropertiesAreaOptions() { Layout = PropertiesAreaLayout.Categorized }" />
-        </TabStripTab>
-        <TabStripTab Title="Preview">
-            <ReportViewer ViewerId="rv1"
-                          @ref="@reportViewer"
-                          ServiceUrl="/api/reportdesigner"
-                          ReportSource="@(new ReportSourceOptions()
-                          {
-                            Report = @ReportSourceJson
-                          })"
-                          TemplateUrl="/telerikReportViewerTemplate.html"
-                          ScaleMode="@(ScaleMode.Specific)"
-                          Scale="1.0" />
-        </TabStripTab>
-    </TelerikTabStrip>
+    <WebReportDesigner DesignerId="wrd1"
+                       ServiceUrl="/api/reportdesigner"
+                       ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
+                       PropertiesArea="new PropertiesAreaOptions() { Layout = PropertiesAreaLayout.Categorized }" />
 }
 else
 {
