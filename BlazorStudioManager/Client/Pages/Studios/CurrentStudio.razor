@@ -24,16 +24,16 @@
         height: 600px;
     }
 
-        li [data-action="open"], li[data-action="close"] { display: none !important; }
+        li[data-action="close"] { display: none !important; }
 </style>
 
 @if (ShowReport)
 {
-    <TelerikButton OnClick="ToggleShow">Hide Report Designer</TelerikButton>
-    <TelerikComboBox Data="@ReportDdoData" @bind-Value="ReportTemplateName" ClearButton="false"
+    <TelerikButton OnClick="ToggleShow" Title="Return to Grid" Icon="snap-grid"></TelerikButton>
+    @*<TelerikComboBox Data="@ReportDdoData" @bind-Value="ReportTemplateName" ClearButton="false"
                      OnChange="LoadReport" Filterable="true" PopupWidth="auto">
     </TelerikComboBox>
-    <TelerikButton OnClick="SaveAsTemplate">Save As</TelerikButton>
+    <TelerikButton OnClick="SaveAsTemplate">Save As</TelerikButton>*@
     <TelerikTabStrip @bind-ActiveTabIndex="@ActiveTabIndex">
 
         <TabStripTab Title="Designer">

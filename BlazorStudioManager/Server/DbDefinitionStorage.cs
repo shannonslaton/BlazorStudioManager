@@ -129,6 +129,7 @@ namespace BlazorStudioManager.Server
                 if (existing != null)
                 {
                     existing.Layout = definition;
+                    existing.LastModifiedOnDt = DateTime.Now;
                 }
                 else
                 {
@@ -147,7 +148,8 @@ namespace BlazorStudioManager.Server
 
                     _contextIdentity.Add(saveTemplate);
                 }
-                _contextIdentity.SaveChanges();
+
+                var savedChangesCount = _contextIdentity.SaveChanges();
             }
         }
         public void DeleteDefinition(string definitionId)

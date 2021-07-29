@@ -59,6 +59,47 @@ namespace BlazorStudioManager.Server
             _contextIdentity = contextIdentity;
             _context = context;
         }
+
+        //public ReportSource Resolve(string definitionId, OperationOrigin operationOrigin, IDictionary<string, object> currentParameterValues)
+        //{
+        //    // Retrieve the report definition bytes from the database.
+        //    var foundTemplate = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == definitionId);
+        //    if (foundTemplate == null)
+        //    {
+        //        return null;
+        //    }
+
+        //    Report reportInstance = null;
+        //    if (definitionId.EndsWith(".trdx"))
+        //    {
+        //        XmlReaderSettings settings = new XmlReaderSettings();
+        //        settings.IgnoreWhitespace = true;
+        //        using (XmlReader xmlReader = XmlReader.Create(new MemoryStream(foundTemplate.Layout), settings))
+        //        {
+        //            ReportXmlSerializer xmlSerializer = new ReportXmlSerializer();
+
+        //            reportInstance = (Report)xmlSerializer.Deserialize(xmlReader);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var reportPackager = new ReportPackager();
+        //        using (var sourceStream = new MemoryStream(foundTemplate.Layout))
+        //        {
+        //            reportInstance = (Report)reportPackager.UnpackageDocument(sourceStream);
+        //        }
+        //    }
+
+        //    var iRs = new InstanceReportSource
+        //    {
+        //        ReportDocument = reportInstance
+        //    };
+
+        //    return iRs;
+        //}
+
+
+
         public ReportSource Resolve(string reportName, OperationOrigin operationOrigin, IDictionary<string, object> currentParameterValues)
         {
             if (reportName.Contains("{"))
@@ -68,7 +109,7 @@ namespace BlazorStudioManager.Server
                 var thisreportName = reportSourceData.Name;
 
                 // Retrieve the report definition bytes from the database.
-                var foundTemplate = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == thisreportName);
+                foundTemplate = _contextIdentity.ReportTemplates.FirstOrDefault(c => c.ReportTemplateName == thisreportName);
                 if (foundTemplate == null)
                 {
                     return null;
@@ -117,7 +158,7 @@ namespace BlazorStudioManager.Server
                 userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
                 var currentUserEmail = Telerik.Reporting.Processing.UserIdentity.Current.Name;
-
+                var ttt = _contextIdentity.ReportTemplates;
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StudioManagerUser>>();
