@@ -34,7 +34,7 @@ namespace BlazorStudioManager.Client.Services
         {
             return await client.GetFromJsonAsync<GridState<Catalog>>($"api/Catalogs/GetGridSave/{GridSaveName}");
         }
-        public async Task<HttpResponseMessage> PostGridSaveCatalogs(GridState<Catalog> gridState, string GridSaveName)
+        public async Task<HttpResponseMessage> PostGridSaveCatalogs(object gridState, string GridSaveName)
         {
             return await client.PostAsJsonAsync($"api/Catalogs/PostGridSave/{GridSaveName}", gridState);
         }

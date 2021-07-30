@@ -16,6 +16,6 @@ namespace BlazorStudioManager.Client.Services
 
         Task<List<string>> GetReportTemplatesDdo();
         Task<GridState<Catalog>> GetGridSaveCatalogs(string GridSaveName);
-        Task<HttpResponseMessage> PostGridSaveCatalogs(GridState<Catalog> gridState, string GridSaveName);
+        Task<HttpResponseMessage> PostGridSaveCatalogs(object gridState, string GridSaveName);
     }
 }

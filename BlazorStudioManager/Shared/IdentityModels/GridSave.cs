@@ -14,7 +14,7 @@ namespace BlazorStudioManager.Shared.IdentityModels
         public string AspUserId { get; set; }
         public string StoreName { get; set; }
         public string GridAllSettings { get; set; }
-        public byte[] GridState { get; set; }
+        //public byte[] GridState { get; set; }
 
     }
 }

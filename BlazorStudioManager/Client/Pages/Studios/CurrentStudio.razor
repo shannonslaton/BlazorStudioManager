@@ -6,6 +6,7 @@
 @using Telerik.WebReportDesigner.Blazor
 @using Telerik.ReportViewer.Blazor
 @inject HttpClient client
+@using Telerik.DataSource;
 
 <h1>Logged In</h1>
 
@@ -23,7 +24,7 @@
         display: none !important;
     }*/
 </style>
-
+<GridReport />
 @if (ShowReport)
 {
     <TelerikButton OnClick="ToggleShow" Title="Return to Grid" Icon="snap-grid"></TelerikButton>
@@ -43,7 +44,7 @@ else
         <TelerikButton OnClick="ToggleShow">Show Report Designer</TelerikButton>
 
         <TelerikGrid Data="@GridData" @ref="Grid" OnStateChanged="@((GridStateEventArgs<Catalog> args) => OnStateChangedHandler(args))"
-                     Navigable="true" SortMode="@SortMode.Multiple" ShowColumnMenu="true" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterMenu" FilterMenuType="FilterMenuType.CheckBoxList"
+                     Navigable="true" SortMode="@SortMode.Multiple" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterRow" 
                      Resizable="true" Reorderable="true"
                      OnStateInit="@((GridStateEventArgs<Catalog> args) => OnStateInit(args))">
             <GridColumns>
@@ -158,6 +159,19 @@ else
     {
         var gridState = Grid.GetState();
 
+        foreach (FilterDescriptor fd in gridState.FilterDescriptors)
+        {
+            if (fd.ConvertedValue != null)
+            {
+                var filter = new ReportSourceFilter();
+                filter.Member = fd.Member;
+                filter.Value = fd.ConvertedValue;
+                filter.OperatorString = Enum.GetName(typeof(FilterOperator), fd.Operator);
+                //if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
+                //reportSourceObject.Filters.Add(filter);
+            }
+        }
+
         var message = await service.PostGridSaveCatalogs(gridState, GridSaveName);
     }
     public void OnStateInit(GridStateEventArgs<Catalog> args)
@@ -175,6 +189,19 @@ else
 
     public async void OnStateChangedHandler(GridStateEventArgs<Catalog> args)
     {
+
+        foreach (FilterDescriptor fd in args.GridState.FilterDescriptors)
+        {
+            if (fd.ConvertedValue != null)
+            {
+                var filter = new ReportSourceFilter();
+                filter.Member = fd.Member;
+                filter.Value = fd.ConvertedValue;
+                filter.OperatorString = Enum.GetName(typeof(FilterOperator), fd.Operator);
+                //if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
+                //reportSourceObject.Filters.Add(filter);
+            }
+        }
         // Because applying multiple groups would make the Report-Definition more complex, only 1 grouping
         // is allowed for the grid. If another one is applied, the first one is removed/overwritten.
         if (args.PropertyName == "GroupDescriptors")
@@ -189,6 +216,19 @@ else
 
         // Allowes the grid to be restored when switching tabs from Report back to Grid
         this.savedGridState = args.GridState;
+
+        foreach (FilterDescriptor fd in this.savedGridState.FilterDescriptors)
+        {
+            if (fd.ConvertedValue != null)
+            {
+                var filter = new ReportSourceFilter();
+                filter.Member = fd.Member;
+                filter.Value = fd.ConvertedValue;
+                filter.OperatorString = Enum.GetName(typeof(FilterOperator), fd.Operator);
+                //if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
+                //reportSourceObject.Filters.Add(filter);
+            }
+        }
 
         if (args.GridState != null)
         {

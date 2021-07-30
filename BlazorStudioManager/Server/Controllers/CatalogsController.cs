@@ -9,6 +9,7 @@ using Telerik.Blazor.Components;
 using BlazorStudioManager.Shared.IdentityModels;
 using System;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace BlazorStudioManager.Server.Controllers
 {
@@ -159,11 +160,15 @@ namespace BlazorStudioManager.Server.Controllers
             return nullSettings;
         }
         [HttpPost("{GridSaveName}")]
-        public async Task<ActionResult> PostGridSave(GridState<Catalog> gridState, string GridSaveName)
+        public async Task<ActionResult> PostGridSave(object gridState, string GridSaveName)
         {
             await GetUserAndProduction();
 
-            var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(gridState);
+            var jsonStringn = Newtonsoft.Json.JsonConvert.SerializeObject(gridState);
+            var jsonStringd = Newtonsoft.Json.JsonConvert.DeserializeObject<GridState<Catalog>>(jsonStringn);
+
+            var jsonString = JsonSerializer.Serialize(gridState);
+            var fgridState = JsonSerializer.Deserialize<GridState<Catalog>>(jsonString);
 
             GridSave gridSave = new GridSave()
             {

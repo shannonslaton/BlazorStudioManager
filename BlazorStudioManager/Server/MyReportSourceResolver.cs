@@ -11,16 +11,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using System.Xml;
 using Telerik.Reporting;
 using Telerik.Reporting.Services;
 using Telerik.Reporting.XmlSerialization;
 using BlazorStudioManager.Shared;
-using BlazorStudioManager.Client.Services;
 using Telerik.Blazor.Components;
 using Telerik.DataSource;
-using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BlazorStudioManager.Server
 {
@@ -166,7 +165,8 @@ namespace BlazorStudioManager.Server
             GridState<Catalog> gridState = new GridState<Catalog>();
             if (gridSave != null)
             {
-                gridState = Newtonsoft.Json.JsonConvert.DeserializeObject<GridState<Catalog>>(gridSave.GridAllSettings);
+                gridState = JsonSerializer.Deserialize<GridState<Catalog>>(gridSave.GridAllSettings);
+                //gridState = Newtonsoft.Json.JsonConvert.DeserializeObject<GridState<Catalog>>(gridSave.GridAllSettings);
             }
 
             var reportSourceObject = new ReportSourceCatalog();
@@ -176,18 +176,18 @@ namespace BlazorStudioManager.Server
             var fdCollection = gridState.FilterDescriptors;
 
             // Translating the filter applied to the grid to JSON data
-            //foreach (FilterDescriptor fd in gridState.FilterDescriptors)
-            foreach (var fd in fdCollection)
+            foreach (FilterDescriptor fd in gridState.FilterDescriptors)
+            //foreach (var fd in fdCollection)
             {
-                //if (fd.ConvertedValue != null)
-                //{
-                //    var filter = new ReportSourceFilter();
-                //    filter.Member = fd.Member;
-                //    filter.Value = fd.ConvertedValue;
-                //    filter.OperatorString = Enum.GetName(typeof(Telerik.DataSource.FilterOperator), fd.Operator);
-                //    if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
-                //    reportSourceObject.Filters.Add(filter);
-                //}
+                if (fd.ConvertedValue != null)
+                {
+                    var filter = new ReportSourceFilter();
+                    filter.Member = fd.Member;
+                    filter.Value = fd.ConvertedValue;
+                    filter.OperatorString = Enum.GetName(typeof(Telerik.DataSource.FilterOperator), fd.Operator);
+                    if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
+                    reportSourceObject.Filters.Add(filter);
+                }
             }
 
             // Translating the sorting applied to the grid to JSON data
