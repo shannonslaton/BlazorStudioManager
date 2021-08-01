@@ -163,12 +163,12 @@ namespace BlazorStudioManager.Server.Controllers
         public async Task<ActionResult> PostGridSave(object gridState, string GridSaveName)
         {
             await GetUserAndProduction();
-
+            Telerik.DataSource.FilterDescriptor fd;
             var jsonStringn = Newtonsoft.Json.JsonConvert.SerializeObject(gridState);
-            var jsonStringd = Newtonsoft.Json.JsonConvert.DeserializeObject<GridState<Catalog>>(jsonStringn);
-
+            var jsonStringd = Newtonsoft.Json.JsonConvert.DeserializeObject<CustomGridState<Catalog>>(jsonStringn);
+            //Telerik.DataSource.Grid
             var jsonString = JsonSerializer.Serialize(gridState);
-            var fgridState = JsonSerializer.Deserialize<GridState<Catalog>>(jsonString);
+            var fgridState = JsonSerializer.Deserialize<CustomGridState<Catalog>>(jsonString);
 
             GridSave gridSave = new GridSave()
             {
@@ -193,5 +193,81 @@ namespace BlazorStudioManager.Server.Controllers
 
             return Ok();
         }
+    }
+
+    //
+    // Summary:
+    //     The class that contains the state of the Telerik Grid Component.
+    public class CustomGridState<TItem>
+    {
+        public CustomGridState()
+        {
+
+        }
+
+        //
+        // Summary:
+        //     Defines the grouping criteria for the Grid Data. Accepts Telerik.DataSource.GroupDescriptor.
+        public ICollection<Telerik.DataSource.GroupDescriptor> GroupDescriptors { get; set; }
+        //
+        // Summary:
+        //     Defines the collapsed groups in the GridData. Use together with GroupDescriptors.
+        //     The collapsed groups can be defined only for the current page.
+        public ICollection<int> CollapsedGroups { get; set; }
+        //
+        // Summary:
+        //     Defines the column state of the configured columns in the Grid. Used for changing
+        //     the indices of the columns and their width.
+        public ICollection<GridColumnState> ColumnStates { get; set; }
+        //
+        // Summary:
+        //     Defines the expanded rows in the Grid. The expanded rows can be defined only
+        //     for the current page, and illustrate the rendering indices of the rows.
+        public ICollection<int> ExpandedRows { get; set; }
+
+        //
+        // Summary:
+        //     Defines the filtering criteria for the Grid Data. Accepts Telerik.DataSource.FilterDescriptor
+        //     and Telerik.DataSource.CompositeFilterDescriptor.
+        public ICollection<Telerik.DataSource.FilterDescriptor> FilterDescriptors { get; set; }
+        //
+        // Summary:
+        //     Defines the sorting criteria for the Grid Data. Accepts Telerik.DataSource.SortDescriptor.
+        public ICollection<Telerik.DataSource.SortDescriptor> SortDescriptors { get; set; }
+        //
+        // Summary:
+        //     Defines the page to be loaded in the Grid. Page Parameter will be updated accordingly.
+        public int? Page { get; set; }
+        //
+        // Summary:
+        //     Defines items to be skiped when loading the Grid. Used for GridScrollMode.Virtual
+        //     to automatically calculate the scroll position based on the items that need to
+        //     be skiped.
+        public int? Skip { get; set; }
+        //
+        // Summary:
+        //     Defines the selected items in the Grid. Updates the SelectedItems parameter accordingly.
+        public ICollection<TItem> SelectedItems { get; set; }
+        //
+        // Summary:
+        //     Defines the original item in the Grid Data that is in edit.
+        public TItem OriginalEditItem { get; set; }
+        //
+        // Summary:
+        //     Defines the updated item while editing.
+        public TItem EditItem { get; set; }
+        //
+        // Summary:
+        //     Defines the edit field that is in edit. Used for incell editing.
+        public string EditField { get; set; }
+        //
+        // Summary:
+        //     Defines the newly added item.
+        public TItem InsertedItem { get; set; }
+        //
+        // Summary:
+        //     Defines the table width of the grid. Related to the proper persistence of table
+        //     content metrics when resizing columns.
+        public string TableWidth { get; set; }
     }
 }
