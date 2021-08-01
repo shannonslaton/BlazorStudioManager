@@ -161,7 +161,7 @@ namespace BlazorStudioManager.Server.Controllers
         }
         public T GetItem<T>(string key)
         {
-            return JsonSerializer.Deserialize<T>(data);
+            return JsonSerializer.Deserialize<T>(key);
         }
         [HttpPost("{GridSaveName}")]
         public async Task<ActionResult> PostGridSave(object gridState, string GridSaveName)
