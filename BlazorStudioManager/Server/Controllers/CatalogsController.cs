@@ -159,6 +159,10 @@ namespace BlazorStudioManager.Server.Controllers
             GridState<Catalog> nullSettings = new GridState<Catalog>();
             return nullSettings;
         }
+        public T GetItem<T>(string key)
+        {
+            return JsonSerializer.Deserialize<T>(data);
+        }
         [HttpPost("{GridSaveName}")]
         public async Task<ActionResult> PostGridSave(object gridState, string GridSaveName)
         {
