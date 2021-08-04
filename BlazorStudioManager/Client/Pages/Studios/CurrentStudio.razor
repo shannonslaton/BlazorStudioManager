@@ -7,6 +7,7 @@
 @using Telerik.ReportViewer.Blazor
 @inject HttpClient client
 @using Telerik.DataSource;
+@using System.Text.Json;
 
 <h1>Logged In</h1>
 
@@ -43,13 +44,13 @@ else
     {
         <TelerikButton OnClick="ToggleShow">Show Report Designer</TelerikButton>
 
-        <TelerikGrid Data="@GridData" @ref="Grid" OnStateChanged="@((GridStateEventArgs<Catalog> args) => OnStateChangedHandler(args))"
-                     Navigable="true" SortMode="@SortMode.Multiple" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterRow" 
+        <TelerikGrid Data="@GridData" @ref="Grid"
+                     Navigable="true" SortMode="@SortMode.Multiple" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.FilterMenu" FilterMenuType="FilterMenuType.CheckBoxList"
                      Resizable="true" Reorderable="true"
                      OnStateInit="@((GridStateEventArgs<Catalog> args) => OnStateInit(args))">
             <GridColumns>
-                <GridColumn Field="RecId" Title="Id" Width="150px" />
-                <GridColumn Field="CatalogName" Title="Name" Width="150px" />
+                <GridColumn Field="RecId" FieldType="@typeof(int)" Title="Id" Width="150px" />
+                <GridColumn Field="CatalogName" FieldType="@typeof(string)" Title="Name" Width="150px" />
             </GridColumns>
         </TelerikGrid>
     }
@@ -159,20 +160,18 @@ else
     {
         var gridState = Grid.GetState();
 
-        foreach (FilterDescriptor fd in gridState.FilterDescriptors)
-        {
-            if (fd.ConvertedValue != null)
-            {
-                var filter = new ReportSourceFilter();
-                filter.Member = fd.Member;
-                filter.Value = fd.ConvertedValue;
-                filter.OperatorString = Enum.GetName(typeof(FilterOperator), fd.Operator);
-                //if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
-                //reportSourceObject.Filters.Add(filter);
-            }
-        }
+        //var passStateString = ;
+        //var passState = new PassGridState()
+        //{
+        //    StateName = GridSaveName,
+        //    StateString = JsonSerializer.Serialize(gridState)
+        //};
 
-        var message = await service.PostGridSaveCatalogs(gridState, GridSaveName);
+        var message = await service.PostGridSaveCatalogs(new PassGridState()
+        {
+            StateName = GridSaveName,
+            StateString = JsonSerializer.Serialize(gridState)
+        });
     }
     public void OnStateInit(GridStateEventArgs<Catalog> args)
     {
@@ -185,54 +184,5 @@ else
         {
             // the JS Interop for the local storage cannot be used during pre-rendering
         }
-    }
-
-    public async void OnStateChangedHandler(GridStateEventArgs<Catalog> args)
-    {
-
-        foreach (FilterDescriptor fd in args.GridState.FilterDescriptors)
-        {
-            if (fd.ConvertedValue != null)
-            {
-                var filter = new ReportSourceFilter();
-                filter.Member = fd.Member;
-                filter.Value = fd.ConvertedValue;
-                filter.OperatorString = Enum.GetName(typeof(FilterOperator), fd.Operator);
-                //if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
-                //reportSourceObject.Filters.Add(filter);
-            }
-        }
-        // Because applying multiple groups would make the Report-Definition more complex, only 1 grouping
-        // is allowed for the grid. If another one is applied, the first one is removed/overwritten.
-        if (args.PropertyName == "GroupDescriptors")
-        {
-            if (args.GridState.GroupDescriptors.Count > 1)
-            {
-                var groups = args.GridState.GroupDescriptors;
-                groups.Remove(groups.First());
-                await Grid.SetState(args.GridState);
-            }
-        }
-
-        // Allowes the grid to be restored when switching tabs from Report back to Grid
-        this.savedGridState = args.GridState;
-
-        foreach (FilterDescriptor fd in this.savedGridState.FilterDescriptors)
-        {
-            if (fd.ConvertedValue != null)
-            {
-                var filter = new ReportSourceFilter();
-                filter.Member = fd.Member;
-                filter.Value = fd.ConvertedValue;
-                filter.OperatorString = Enum.GetName(typeof(FilterOperator), fd.Operator);
-                //if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
-                //reportSourceObject.Filters.Add(filter);
-            }
-        }
-
-        if (args.GridState != null)
-        {
-            //SetReportSourceJson(args.GridState);
-        };
     }
 }

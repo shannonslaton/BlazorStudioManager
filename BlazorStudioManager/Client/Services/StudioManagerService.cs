@@ -1,4 +1,5 @@
 ﻿using BlazorStudioManager.Shared;
+using BlazorStudioManager.Shared.HelperModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,9 +35,9 @@ namespace BlazorStudioManager.Client.Services
         {
             return await client.GetFromJsonAsync<GridState<Catalog>>($"api/Catalogs/GetGridSave/{GridSaveName}");
         }
-        public async Task<HttpResponseMessage> PostGridSaveCatalogs(object gridState, string GridSaveName)
+        public async Task<HttpResponseMessage> PostGridSaveCatalogs(PassGridState passState)
         {
-            return await client.PostAsJsonAsync($"api/Catalogs/PostGridSave/{GridSaveName}", gridState);
+            return await client.PostAsJsonAsync($"api/Catalogs/PostGridSave", passState);
         }
 
     }

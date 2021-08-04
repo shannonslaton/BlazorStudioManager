@@ -1,4 +1,5 @@
 ﻿using BlazorStudioManager.Shared;
+using BlazorStudioManager.Shared.HelperModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,6 @@ namespace BlazorStudioManager.Client.Services
 
         Task<List<string>> GetReportTemplatesDdo();
         Task<GridState<Catalog>> GetGridSaveCatalogs(string GridSaveName);
-        Task<HttpResponseMessage> PostGridSaveCatalogs(object gridState, string GridSaveName);
+        Task<HttpResponseMessage> PostGridSaveCatalogs(PassGridState passState);
     }
 }

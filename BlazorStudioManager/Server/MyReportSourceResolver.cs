@@ -173,20 +173,19 @@ namespace BlazorStudioManager.Server
             reportSourceObject.Name = reportName;
             reportSourceObject.Data = GridData;
 
-            var fdCollection = gridState.FilterDescriptors;
-
-            // Translating the filter applied to the grid to JSON data
-            foreach (FilterDescriptor fd in gridState.FilterDescriptors)
-            //foreach (var fd in fdCollection)
+            foreach (CompositeFilterDescriptor cd in gridState.FilterDescriptors)
             {
-                if (fd.ConvertedValue != null)
+                foreach (FilterDescriptor fd in cd.FilterDescriptors)
                 {
-                    var filter = new ReportSourceFilter();
-                    filter.Member = fd.Member;
-                    filter.Value = fd.ConvertedValue;
-                    filter.OperatorString = Enum.GetName(typeof(Telerik.DataSource.FilterOperator), fd.Operator);
-                    if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
-                    reportSourceObject.Filters.Add(filter);
+                    if (fd.ConvertedValue != null)
+                    {
+                        var filter = new ReportSourceFilter();
+                        filter.Member = fd.Member;
+                        filter.Value = fd.ConvertedValue;
+                        filter.OperatorString = Enum.GetName(typeof(Telerik.DataSource.FilterOperator), fd.Operator);
+                        if (reportSourceObject.Filters == null) reportSourceObject.Filters = new List<ReportSourceFilter>();
+                        reportSourceObject.Filters.Add(filter);
+                    }
                 }
             }
 
@@ -235,6 +234,18 @@ namespace BlazorStudioManager.Server
                 Source = json
             };
 
+            // Set the filters
+            if (reportSourceObject.Filters != null)
+            {
+                this.BindFilters(reportSourceObject.Filters, rpt);
+            }
+
+            // Set the sorting
+            if (reportSourceObject.Sortings != null)
+            {
+                this.BindSorts(reportSourceObject.Sortings, rpt);
+            }
+
 
             iRs = new InstanceReportSource
             {
@@ -242,6 +253,70 @@ namespace BlazorStudioManager.Server
             };
 
             return iRs;
+        }
+
+        private void BindFilters(List<ReportSourceFilter> filters, Report gridReportInstance)
+        {
+            // Clears any previous filters and adds them using the ToReportingFilter method
+            var reportFilters = gridReportInstance.Filters;
+            reportFilters.Clear();
+            foreach (ReportSourceFilter filter in filters)
+            {
+                reportFilters.Add(this.ToReportingFilter(filter));
+            }
+        }
+        private void BindSorts(ReportSourceSorting sort, Report gridReportInstance)
+        {
+            // Clears previous sortings and adds them
+            var reportSorts = gridReportInstance.Sortings;
+            reportSorts.Clear();
+            var dir = "Ascending".Equals(sort.Direction) ? SortDirection.Asc : SortDirection.Desc;
+            var field = "= Fields." + sort.Member;
+            reportSorts.Add(field, dir);
+        }
+        // Because the filters work differently in Blazor UI and Reporting, some translation is needed, which is done in this method
+        private Filter ToReportingFilter(ReportSourceFilter filter)
+        {
+            switch (filter.OperatorString)
+            {
+                case "IsLessThan":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.LessThan, Convert.ToString(filter.Value));
+                case "IsLessThanOrEqualTo":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.LessOrEqual, Convert.ToString(filter.Value));
+                case "IsGreaterThan":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.GreaterThan, Convert.ToString(filter.Value));
+                case "IsGreaterThanOrEqualTo":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.GreaterOrEqual, Convert.ToString(filter.Value));
+                case "IsEqualTo":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.Equal, Convert.ToString(filter.Value));
+                case "IsNotEqualTo":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.NotEqual, Convert.ToString(filter.Value));
+                case "StartsWith":
+                    return new Filter("= ToLower(Fields." + filter.Member + ")", Telerik.Reporting.FilterOperator.Like, Convert.ToString(filter.Value).ToLower() + "%");
+                case "EndsWith":
+                    return new Filter("= ToLower(Fields." + filter.Member + ")", Telerik.Reporting.FilterOperator.Like, "%" + Convert.ToString(filter.Value).ToLower());
+                case "Contains":
+                    return new Filter("= ToLower(Fields." + filter.Member + ")", Telerik.Reporting.FilterOperator.Like, "%" + Convert.ToString(filter.Value).ToLower() + "%");
+                case "IsContainedIn":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.In, Convert.ToString(filter.Value));
+                case "DoesNotContain":
+                    return new Filter("= ToLower(Fields." + filter.Member + ")", Telerik.Reporting.FilterOperator.NotLike, "%" + Convert.ToString(filter.Value).ToLower() + "%");
+                case "IsNull":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.Equal, "Null");
+                case "IsNotNull":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.NotEqual, "Null");
+                case "IsEmpty":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.Like, string.Empty);
+                case "IsNotEmpty":
+                    return new Filter("= Fields." + filter.Member, Telerik.Reporting.FilterOperator.NotLike, string.Empty);
+                case "IsNullOrEmpty":
+                    return new Filter("= (Fields." + filter.Member + " Is Null) ? True : (Fields." + filter.Member + " = \"\" ? True : False)", Telerik.Reporting.FilterOperator.Equal, "True");
+                case "IsNotNullOrEmpty":
+                    return new Filter("= (Fields." + filter.Member + " Is Null) ? True : (Fields." + filter.Member + " = \"\" ? True : False)", Telerik.Reporting.FilterOperator.Equal, "False");
+
+                default:
+                    throw new ArgumentException();
+            }
         }
     }
 }

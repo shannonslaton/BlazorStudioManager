@@ -10,6 +10,7 @@ using BlazorStudioManager.Shared.IdentityModels;
 using System;
 using System.Security.Claims;
 using System.Text.Json;
+using BlazorStudioManager.Shared.HelperModels;
 
 namespace BlazorStudioManager.Server.Controllers
 {
@@ -152,7 +153,7 @@ namespace BlazorStudioManager.Server.Controllers
             var gridSave = await _contextIdentity.GridSaves.Where(c => c.StoreName == GridSaveName).Where(c => c.AspUserId == CurrentUser.Id).FirstOrDefaultAsync();
             if (gridSave != null)
             {
-                var jsonString = Newtonsoft.Json.JsonConvert.DeserializeObject<GridState<Catalog>>(gridSave.GridAllSettings);
+                var jsonString = JsonSerializer.Deserialize<GridState<Catalog>>(gridSave.GridAllSettings);
 
                 return jsonString;
             }
@@ -163,38 +164,33 @@ namespace BlazorStudioManager.Server.Controllers
         {
             return JsonSerializer.Deserialize<T>(key);
         }
-        [HttpPost("{GridSaveName}")]
-        public async Task<ActionResult> PostGridSave(object gridState, string GridSaveName)
+        [HttpPost]
+        public async Task<ActionResult> PostGridSave(PassGridState passState)
         {
             await GetUserAndProduction();
-            Telerik.DataSource.FilterDescriptor fd;
-            var jsonStringn = Newtonsoft.Json.JsonConvert.SerializeObject(gridState);
-            var jsonStringd = Newtonsoft.Json.JsonConvert.DeserializeObject<CustomGridState<Catalog>>(jsonStringn);
-            //Telerik.DataSource.Grid
-            var jsonString = JsonSerializer.Serialize(gridState);
-            var fgridState = JsonSerializer.Deserialize<CustomGridState<Catalog>>(jsonString);
 
             GridSave gridSave = new GridSave()
             {
                 Updated = true,
                 LastModifiedById = CurrentUser.Id,
                 LastModifiedOnDt = DateTime.UtcNow,
-                GridAllSettings = jsonString,
+                GridAllSettings = passState.StateString,
                 AspUserId = CurrentUser.Id,
-                StoreName = GridSaveName
+                StoreName = passState.StateName
             };
 
             var stateExists = await _contextIdentity.GridSaves.Where(c => c.StoreName == gridSave.StoreName).Where(c => c.AspUserId == gridSave.AspUserId).FirstOrDefaultAsync();
 
             if (stateExists != null)
             {
-                _contextIdentity.GridSaves.Remove(stateExists);
+                stateExists.GridAllSettings = passState.StateString;
                 await _contextIdentity.SaveChangesAsync();
             }
-
-            await _contextIdentity.AddAsync(gridSave);
-            await _contextIdentity.SaveChangesAsync();
-
+            else
+            {
+                await _contextIdentity.AddAsync(gridSave);
+                await _contextIdentity.SaveChangesAsync();
+            }
             return Ok();
         }
     }
