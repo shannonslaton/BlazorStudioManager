@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.8" />
     <PackageReference Include="Microsoft.JSInterop" Version="5.0.8" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="Telerik.UI.for.Blazor" Version="2.25.0" />
+    <PackageReference Include="Telerik.UI.for.Blazor" Version="2.26.0" />
   </ItemGroup>
 
   <ItemGroup>

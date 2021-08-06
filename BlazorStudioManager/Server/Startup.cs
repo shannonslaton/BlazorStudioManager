@@ -42,7 +42,7 @@ namespace BlazorStudioManager.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<StudioManagerContext>(options =>
+            services.AddDbContext<StudioManagerUserContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("StudioManagerUserConnectionMaster"),
                 sqlServerOptionsAction: sqlOptions =>
@@ -67,9 +67,6 @@ namespace BlazorStudioManager.Server
             });
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-
-            //services.AddDefaultIdentity<StudioManagerUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            //    .AddEntityFrameworkStores<StudioManagerContext>();
 
             services.AddIdentity<StudioManagerUser, StudioManagerNetRole>().AddRoles<StudioManagerNetRole>().AddEntityFrameworkStores<StudioManagerIdentityContext>().AddDefaultTokenProviders();
             services.ConfigureApplicationCookie(options =>

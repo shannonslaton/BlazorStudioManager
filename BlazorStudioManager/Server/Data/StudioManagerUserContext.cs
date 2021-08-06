@@ -5,9 +5,9 @@ using BlazorStudioManager.Shared.IdentityModels;
 
 namespace BlazorStudioManager.Server.Data
 {
-    public partial class StudioManagerContext : DbContext
+    public partial class StudioManagerUserContext : DbContext
     {
-        public StudioManagerContext(DbContextOptions<StudioManagerContext> options) : base(options)
+        public StudioManagerUserContext(DbContextOptions<StudioManagerUserContext> options) : base(options)
         {
         }
 

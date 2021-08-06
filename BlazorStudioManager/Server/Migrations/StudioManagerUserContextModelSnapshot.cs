@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BlazorStudioManager.Server.Migrations
 {
-    [DbContext(typeof(StudioManagerContext))]
-    partial class StudioManagerContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(StudioManagerUserContext))]
+    partial class StudioManagerUserContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

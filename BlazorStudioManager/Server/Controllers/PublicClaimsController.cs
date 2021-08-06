@@ -18,7 +18,7 @@ namespace BlazorStudioManager.Server.Controllers
     [ApiController]
     public class PublicClaimsController : ControllerBase
     {
-        private readonly StudioManagerContext _contextUser;
+        private readonly StudioManagerUserContext _contextUser;
         private readonly StudioManagerIdentityContext _contextIdentity;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<StudioManagerUser> _userManager;
@@ -31,7 +31,7 @@ namespace BlazorStudioManager.Server.Controllers
         private string GridStoreName { get; set; } = "DeviceAccessories";
         private SharedProduction CurrentSharedProduction { get; set; }
 
-        public PublicClaimsController(StudioManagerContext contextUser, StudioManagerIdentityContext contextIdentity, IHttpContextAccessor httpContextAccessor, UserManager<StudioManagerUser> userManager)
+        public PublicClaimsController(StudioManagerUserContext contextUser, StudioManagerIdentityContext contextIdentity, IHttpContextAccessor httpContextAccessor, UserManager<StudioManagerUser> userManager)
         {
             _contextUser = contextUser;
             _contextIdentity = contextIdentity;

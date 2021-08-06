@@ -19,7 +19,7 @@ namespace BlazorStudioManager.Server.Controllers
     [ApiController]
     public class ReportTemplatesController : ControllerBase
     {
-        private readonly StudioManagerContext _contextUser;
+        private readonly StudioManagerUserContext _contextUser;
         private readonly StudioManagerIdentityContext _contextIdentity;
 
         private bool saveIdentitySuccess;
@@ -29,7 +29,7 @@ namespace BlazorStudioManager.Server.Controllers
         private string GridStoreName { get; set; } = "ReportTemplates";
         private StudioManagerUser CurrentUser { get; set; }
 
-        public ReportTemplatesController(StudioManagerContext contextUser, StudioManagerIdentityContext contextIdentity)
+        public ReportTemplatesController(StudioManagerUserContext contextUser, StudioManagerIdentityContext contextIdentity)
         {
             _contextUser = contextUser;
             _contextIdentity = contextIdentity;

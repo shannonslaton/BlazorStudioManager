@@ -20,14 +20,16 @@
         padding-right: 50px;
     }
 
-    /*
+
     li[data-action="close"] {
         display: none !important;
-    }*/
+    }
 </style>
 @if (ShowReport)
 {
     <TelerikButton OnClick="ToggleShow" Title="Return to Grid" Icon="snap-grid"></TelerikButton>
+    <label class="k-label">Studio Manager Templates</label>
+    <TelerikSwitch @bind-Value="@ShowStudioManagerTemplates" OnChange="ShowStudioManagerTemplatesHandler" />
     <WebReportDesigner DesignerId="wrd1"
                        ServiceUrl="/api/reportdesigner"
                        ToolboxArea="new ToolboxAreaOptions() { Layout = ToolboxAreaLayout.List }"
@@ -60,6 +62,7 @@ else
 
     public bool IsLoading { get; set; }
     public bool ShowReport { get; set; }
+    public bool ShowStudioManagerTemplates { get; set; }
     public ReportViewer reportViewer;
     public WebReportDesigner reportDesigner;
     public TelerikGrid<Catalog> Grid;
@@ -92,6 +95,11 @@ else
         await service.SetEnums(passReportDefinition);
 
         IsLoading = false;
+    }
+
+    void ShowStudioManagerTemplatesHandler()
+    {
+
     }
 
     async Task ToggleShow()

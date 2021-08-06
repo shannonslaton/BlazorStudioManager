@@ -18,11 +18,11 @@ namespace BlazorStudioManager.Server.Controllers
     [ApiController]
     public class CatalogsController : ControllerBase
     {
-        private readonly StudioManagerContext _context;
+        private readonly StudioManagerUserContext _context;
         private readonly StudioManagerIdentityContext _contextIdentity;
         private StudioManagerUser CurrentUser { get; set; }
 
-        public CatalogsController(StudioManagerContext context, StudioManagerIdentityContext contextIdentity)
+        public CatalogsController(StudioManagerUserContext context, StudioManagerIdentityContext contextIdentity)
         {
             _context = context;
             _contextIdentity = contextIdentity;

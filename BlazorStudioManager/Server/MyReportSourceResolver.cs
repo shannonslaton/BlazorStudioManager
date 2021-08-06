@@ -25,8 +25,6 @@ namespace BlazorStudioManager.Server
 {
     public class MyReportSourceResolver : IReportSourceResolver
     {
-        //private readonly StudioManagerIdentityContext _contextIdentity;
-        //private readonly StudioManagerContext _context;
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceProvider _serviceProvider;
 
@@ -38,7 +36,7 @@ namespace BlazorStudioManager.Server
         public ReportTemplate foundTemplate { get; set; }
         public InstanceReportSource iRs { get; set; }
         private readonly DbContextOptions<StudioManagerIdentityContext> StudioManagerIdentityOptions;
-        private readonly DbContextOptions<StudioManagerContext> StudioManagerOptions;
+        private readonly DbContextOptions<StudioManagerUserContext> StudioManagerUserOptions;
         public ReportSourceCatalog reportSourceCatalog { get; set; } = new ReportSourceCatalog();
 
         public MyReportSourceResolver(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
@@ -50,16 +48,11 @@ namespace BlazorStudioManager.Server
             var optionsBuilderUser = new DbContextOptionsBuilder<StudioManagerIdentityContext>();
             optionsBuilderUser.UseSqlServer(conStringUser);
             this.StudioManagerIdentityOptions = optionsBuilderUser.Options;
-            //var contextIdentity = new StudioManagerIdentityContext(optionsBuilderUser.Options);
 
             var conString = configuration.GetConnectionString("StudioManagerUserConnectionMaster");
-            var optionsBuilder = new DbContextOptionsBuilder<StudioManagerContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<StudioManagerUserContext>();
             optionsBuilder.UseSqlServer(conString);
-            this.StudioManagerOptions = optionsBuilder.Options;
-            //var context = new StudioManagerContext(optionsBuilder.Options);
-
-            //_contextIdentity = contextIdentity;
-            //_context = context;
+            this.StudioManagerUserOptions = optionsBuilder.Options;
         }
         public ReportSource Resolve(string reportName, OperationOrigin operationOrigin, IDictionary<string, object> currentParameterValues)
         {
@@ -156,7 +149,7 @@ namespace BlazorStudioManager.Server
         private InstanceReportSource FillCatalogs(string reportName)
         {
             var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
-            var _context = new StudioManagerContext(this.StudioManagerOptions);
+            var _context = new StudioManagerUserContext(this.StudioManagerUserOptions);
 
             var GridData = _context.Catalogs.ToList();
 

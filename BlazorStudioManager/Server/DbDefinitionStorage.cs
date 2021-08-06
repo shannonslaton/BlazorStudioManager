@@ -18,8 +18,8 @@ namespace BlazorStudioManager.Server
     public class DbDefinitionStorage : IDefinitionStorage
     {
         public string BaseDir => throw new NotImplementedException();
-        private readonly StudioManagerContext _contextUser;
-        private readonly StudioManagerIdentityContext _contextIdentity;
+        private readonly DbContextOptions<StudioManagerIdentityContext> StudioManagerIdentityOptions;
+        private readonly DbContextOptions<StudioManagerUserContext> StudioManagerUserOptions;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceProvider _serviceProvider;
 
@@ -41,22 +41,24 @@ namespace BlazorStudioManager.Server
             _serviceProvider = serviceProvider;
 
             var conStringUser = configuration.GetConnectionString("StudioManagerUserConnectionMaster");
-            var optionsBuilder = new DbContextOptionsBuilder<StudioManagerContext>();
-            optionsBuilder.UseSqlServer(conStringUser);
-            var contextUser = new StudioManagerContext(optionsBuilder.Options);
+            var optionsBuilderUser = new DbContextOptionsBuilder<StudioManagerUserContext>();
+            optionsBuilderUser.UseSqlServer(conStringUser);
+            this.StudioManagerUserOptions = optionsBuilderUser.Options;
 
             var conStringIdentity = configuration.GetConnectionString("StudioManagerIdentityConnectionLocal");
             var optionsBuilderIdentity = new DbContextOptionsBuilder<StudioManagerIdentityContext>();
             optionsBuilderIdentity.UseSqlServer(conStringIdentity);
+            this.StudioManagerIdentityOptions = optionsBuilderIdentity.Options;
+
+            var contextUser = new StudioManagerUserContext(optionsBuilderUser.Options);
             var contextIdentity = new StudioManagerIdentityContext(optionsBuilderIdentity.Options);
-
-            _contextUser = contextUser;
-            _contextIdentity = contextIdentity;
-
         }
 
         public IEnumerable<string> ListDefinitions()
         {
+            var _contextUser = new StudioManagerUserContext(this.StudioManagerUserOptions);
+            var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
+
             var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var modelType = string.Empty;
@@ -81,6 +83,9 @@ namespace BlazorStudioManager.Server
 
         public byte[] GetDefinition(string definitionId)
         {
+            var _contextUser = new StudioManagerUserContext(this.StudioManagerUserOptions);
+            var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
+
             var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var modelType = string.Empty;
@@ -106,6 +111,9 @@ namespace BlazorStudioManager.Server
 
         public void SaveDefinition(string definitionId, byte[] definition)
         {
+            var _contextUser = new StudioManagerUserContext(this.StudioManagerUserOptions);
+            var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
+
             var userName = _httpContextAccessor.HttpContext.User.Identity.Name;
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var modelType = string.Empty;
@@ -154,6 +162,9 @@ namespace BlazorStudioManager.Server
         }
         public void DeleteDefinition(string definitionId)
         {
+            var _contextUser = new StudioManagerUserContext(this.StudioManagerUserOptions);
+            var _contextIdentity = new StudioManagerIdentityContext(this.StudioManagerIdentityOptions);
+
             // Delete the report definition from the database.
         }
     }

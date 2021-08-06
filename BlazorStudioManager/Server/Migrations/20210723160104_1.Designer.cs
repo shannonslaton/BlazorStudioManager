@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BlazorStudioManager.Server.Migrations
 {
-    [DbContext(typeof(StudioManagerContext))]
+    [DbContext(typeof(StudioManagerUserContext))]
     [Migration("20210723160104_1")]
     partial class _1
     {

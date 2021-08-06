@@ -28,7 +28,7 @@ namespace BlazorStudioManager.Server.Controllers
         private readonly UserManager<StudioManagerUser> _userManager;
         private readonly SignInManager<StudioManagerUser> _signInManager;
         private readonly IEmailSender _emailSender;
-        private readonly StudioManagerContext _contextUser;
+        private readonly StudioManagerUserContext _contextUser;
         private readonly StudioManagerIdentityContext _contextIdentity;
 
         private string defaultPersonUrl;
@@ -45,7 +45,7 @@ namespace BlazorStudioManager.Server.Controllers
         private StudioManagerUser CurrentUser { get; set; }
 
         public AuthController(UserManager<StudioManagerUser> userManager, SignInManager<StudioManagerUser> signInManager,
-            StudioManagerContext contextUser, StudioManagerIdentityContext contextIdentity, IConfiguration configuration, IEmailSender emailSender)
+            StudioManagerUserContext contextUser, StudioManagerIdentityContext contextIdentity, IConfiguration configuration, IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
