@@ -8,23 +8,10 @@
 @inject HttpClient client
 @using Telerik.DataSource;
 @using System.Text.Json;
+@inject IJSRuntime jsRuntime
 
 <h1>Logged In</h1>
 
-
-<style>
-    #wrd1 {
-        position: relative;
-        width: 1300px;
-        height: 880px;
-        padding-right: 50px;
-    }
-
-
-    li[data-action="close"] {
-        display: none !important;
-    }
-</style>
 @if (ShowReport)
 {
     <TelerikButton OnClick="ToggleShow" Title="Return to Grid" Icon="snap-grid"></TelerikButton>
@@ -56,6 +43,21 @@ else
         </TelerikGrid>
     }
 }
+
+<style>
+    #wrd1 {
+        position: relative;
+        width: 1300px;
+        height: 880px;
+        padding-right: 50px;
+    }
+
+
+    li[data-action="close"] {
+        display: none !important;
+    }
+</style>
+
 
 @code{
     [CascadingParameter] public DialogFactory Dialogs { get; set; }
@@ -99,7 +101,7 @@ else
 
     void ShowStudioManagerTemplatesHandler()
     {
-
+        jsRuntime.InvokeVoidAsync("showStudioManagerTemplates", ShowStudioManagerTemplates);
     }
 
     async Task ToggleShow()

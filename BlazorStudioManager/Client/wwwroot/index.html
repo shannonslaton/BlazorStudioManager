@@ -9,6 +9,7 @@
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="BlazorStudioManager.Client.styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
 
     <!--<link rel="stylesheet" href="_content/Telerik.UI.for.Blazor/css/kendo-theme-default/all.css" />
@@ -57,6 +58,22 @@
 
     <script src="_content/Telerik.ReportViewer.Blazor/interop.js" defer></script>
     <script src="_content/telerik.webreportdesigner.blazor/telerikWebReportDesignerInterop.js" defer></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+
+    <script type="text/javascript">
+        function showStudioManagerTemplates(value) {
+            var documentSave = $("li[data-action=documentSave]");
+            if (!documentSave) {
+                console.log("documentSave element not found in the DOM!")
+                return;
+            }
+        
+            if (value)
+                documentSave.hide();
+            else 
+                documentSave.show();
+        }
+    </script>
 </body>
 
 </html>
