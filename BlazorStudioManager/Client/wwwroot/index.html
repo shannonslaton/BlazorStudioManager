@@ -61,6 +61,15 @@
     <script>navigator.serviceWorker.register('service-worker.js');</script>
 
     <script type="text/javascript">
+        /**
+        * Register Service Worker
+        */
+        navigator.serviceWorker
+            .register('/service-worker-cache.js', { scope: '/' })
+            .then(() => {
+                console.log('Service Worker Registered');
+            });
+
         function showStudioManagerTemplates(value) {
             var documentSave = $("li[data-action=documentSave]");
             if (!documentSave) {
