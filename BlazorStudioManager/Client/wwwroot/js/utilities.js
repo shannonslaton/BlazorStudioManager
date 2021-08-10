@@ -185,3 +185,16 @@ function get_time_zone_offset() {
     var current_date = new Date();
     return -current_date.getTimezoneOffset() / 60;
 }
+
+function showStudioManagerTemplates(value) {
+    var documentSave = $("li[data-action=documentSave]");
+    if (!documentSave) {
+        console.log("documentSave element not found in the DOM!")
+        return;
+    }
+
+    if (value)
+        documentSave.hide();
+    else
+        documentSave.show();
+}
