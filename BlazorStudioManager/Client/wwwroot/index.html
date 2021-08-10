@@ -61,7 +61,27 @@
     <script>navigator.serviceWorker.register('service-worker.js');</script>
 
     <script type="text/javascript">
+        /**
+        * Register Service Worker
+        */
+        navigator.serviceWorker
+            .register('/service-worker-cache.js', { scope: '/' })
+            .then(() => {
+                console.log('Service Worker Registered');
+            });
+
+        function showStudioManagerTemplates(value) {
+            var documentSave = $("li[data-action=documentSave]");
+            if (!documentSave) {
+                console.log("documentSave element not found in the DOM!")
+                return;
+            }
         
+            if (value)
+                documentSave.hide();
+            else 
+                documentSave.show();
+        }
     </script>
 </body>
 

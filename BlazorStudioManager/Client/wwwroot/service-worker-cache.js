@@ -1,0 +1,2 @@
+const CACHE_VERSION = 1.0;
+console.log("CACHE_VERSION: " + CACHE_VERSION);
