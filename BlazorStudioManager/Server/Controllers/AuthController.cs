@@ -139,10 +139,6 @@ namespace BlazorStudioManager.Server.Controllers
                 CurrentUser.UserName = parameters.Email;
                 CurrentUser.Email = parameters.Email;
 
-                var testuserConnectionString = _configuration.GetConnectionString("StudioManagerUserConnectionMaster");
-                testuserConnectionString = testuserConnectionString.Replace("StudioManagerBlazorUser", "StudioManagerBlazorUser" + 0);
-                _contextUser.Database.GetDbConnection().ConnectionString = testuserConnectionString;
-
                 var userExisting = await _contextIdentity.StudioManagerUser.FirstOrDefaultAsync(c => c.Email == CurrentUser.Email);
 
                 if (userExisting != null)

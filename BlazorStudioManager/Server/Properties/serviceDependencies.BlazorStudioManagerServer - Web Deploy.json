@@ -18,22 +18,16 @@
       "connectionId": "ConnectionStrings:StudioManagerUserConnectionMaster",
       "secretStore": "AzureKeyVault"
     },
-    "mssql2": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/studiomanagerdbserver/databases/StudioManagerIdentity",
-      "type": "mssql.azure",
-      "connectionId": "ConnectionStrings:StudioManagerIdentityConnection",
-      "secretStore": "AzureKeyVault"
-    },
     "mssql1": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/studiomanagerdbserver/databases/StudioManagerUser",
       "type": "mssql.azure",
       "connectionId": "StudioManagerUserConnection",
       "secretStore": "AzureKeyVault"
     },
-    "mssql3": {
+    "mssql2": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/studiomanagerdbserver/databases/StudioManagerIdentity",
       "type": "mssql.azure",
-      "connectionId": "ConnectionStrings:StudioManagerIdentityConnectionLocal",
+      "connectionId": "StudioManagerIdentityConnection",
       "secretStore": "AzureKeyVault"
     }
   }

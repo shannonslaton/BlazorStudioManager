@@ -12,17 +12,13 @@
       "type": "storage",
       "connectionId": "ConnectionStrings:StudioManagerUserConnectionMaster"
     },
-    "mssql2": {
-      "type": "mssql",
-      "connectionId": "ConnectionStrings:StudioManagerIdentityConnection"
-    },
     "mssql1": {
       "type": "mssql",
       "connectionId": "StudioManagerUserConnection"
     },
-    "mssql3": {
+    "mssql2": {
       "type": "mssql",
-      "connectionId": "ConnectionStrings:StudioManagerIdentityConnectionLocal"
+      "connectionId": "StudioManagerIdentityConnection"
     }
   }
 }

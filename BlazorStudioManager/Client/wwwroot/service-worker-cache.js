@@ -1,2 +1,2 @@
-const CACHE_VERSION = 1.0;
+const CACHE_VERSION = 1.2;
 console.log("CACHE_VERSION: " + CACHE_VERSION);
