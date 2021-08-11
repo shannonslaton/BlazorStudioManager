@@ -250,13 +250,21 @@ namespace BlazorStudioManager.Server
 
         private void BindFilters(List<ReportSourceFilter> filters, Report gridReportInstance)
         {
-            // Clears any previous filters and adds them using the ToReportingFilter method
             var reportFilters = gridReportInstance.Filters;
             reportFilters.Clear();
-            foreach (ReportSourceFilter filter in filters)
+            var fixedFilters = filters.GroupBy(f => f.Member).Select(group =>
             {
-                reportFilters.Add(this.ToReportingFilter(filter));
-            }
+                var filter = new Filter();
+                filter.Operator = Telerik.Reporting.FilterOperator.Equal;
+                filter.Value = "True";
+                filter.Expression = string.Join(") OR (", group.Select(f =>
+                {
+                    return $@"Fields.{f.Member} = ""{f.Value}""";
+                }));
+                filter.Expression = "= ( " + filter.Expression + ")";
+                return filter;
+            });
+            reportFilters.AddRange(fixedFilters);
         }
         private void BindSorts(ReportSourceSorting sort, Report gridReportInstance)
         {
