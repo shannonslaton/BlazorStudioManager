@@ -56,7 +56,7 @@ namespace BlazorStudioManager.Server
 
             services.AddDbContext<StudioManagerIdentityContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("StudioManagerIdentityConnection"),
+                options.UseSqlServer(Configuration.GetConnectionString("StudioManagerIdentityConnectionLocal"),
                 sqlServerOptionsAction: sqlOptions =>
                 {
                     sqlOptions.EnableRetryOnFailure(

@@ -81,7 +81,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-        GridData = await client.GetFromJsonAsync<List<Catalog>>("api/Catalogs/GetCatalogs");
 
         ReportDdoData = await service.GetReportTemplatesDdo();
 
